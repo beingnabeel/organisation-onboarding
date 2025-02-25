@@ -1,0 +1,159 @@
+Always start your reply with "Boss 🫡"
+
+## Project Context
+
+This is a backend service for tenant onboarding that processes organizational data through CSV files
+
+- Handles multi-sheet CSV files containing organizational and employee data
+- Implements ETL pipeline using AWS S3, Lambda, and RabbitMQ
+- Manages data validation and transformation
+- Supports data ingestion into PostgreSQL database
+
+## Important Rules
+
+## File Structure
+
+tenant_onboarding/
+├── src/
+│ ├── controllers/ # Business logic and request handlers
+│ ├── prisma/ # Database schema and migrations
+│ ├── routes/ # API route definitions
+│ ├── utils/ # Helper functions and shared utilities
+│ └── services/ # Business service layer
+├── .env
+├── .gitignore
+├── package.json
+├── README.md
+└── server.js
+
+## Tech Stack
+
+- Node.js
+- Express
+- Prisma ORM
+- PostgreSQL
+- AWS S3
+- AWS Lambda
+- RabbitMQ
+- javascript
+- keycloak
+
+## Git Usage
+
+Commit Message Prefixes:
+
+- "feat:" for new features (e.g., "feat: add CSV validation service")
+- "fix:" for bug fixes
+- "docs:" for documentation updates
+- "refactor:" for code restructuring
+- "perf:" for performance improvements
+- "chore:" for maintenance tasks
+- "test:" for adding/updating tests
+
+## Code Style and Structure
+
+- Use ESLint and Prettier for consistent code formatting
+- Implement modular architecture with clear separation of concerns
+- Write clear, descriptive variable and function names
+- Use async/await for asynchronous operations
+- Implement proper error handling and logging
+- Document complex business logic with comments
+
+## Naming Conventions
+
+- Use camelCase for variables and functions
+- Use PascalCase for classes and types
+- Use UPPER_SNAKE_CASE for constants
+- Use descriptive names for database columns and tables
+- Prefix validation functions with 'validate' (e.g., validateEmployeeData)
+- Prefix transformation functions with 'transform' (e.g., transformSalaryData)
+
+## Error Handling
+
+- Implement custom error classes for different types of errors
+- Use proper try/catch blocks with specific error handling
+- Log errors with appropriate severity levels
+- Return standardized error responses in API endpoints
+- Handle CSV parsing errors gracefully
+- Implement proper queue error handling
+
+## Database Practices
+
+- Use Prisma migrations for database schema changes
+- Write clear and descriptive migration names
+- Implement proper indexing for frequently queried fields
+- Use transactions for related database operations
+- Follow naming conventions for database entities
+- Implement soft deletes where appropriate
+
+## API Design
+
+- Use RESTful conventions for endpoints
+- Implement proper request validation
+- Use consistent response formats
+- Include appropriate HTTP status codes
+- Implement rate limiting for API endpoints
+- Document all API endpoints using JSDoc or similar
+
+## Queue Management
+
+- Implement dead letter queues for failed messages
+- Use proper queue naming conventions
+- Implement retry mechanisms for failed operations
+- Set appropriate message TTL
+- Handle queue connection errors gracefully
+- Implement proper message acknowledgment
+
+## CSV Processing
+
+- Validate CSV structure before processing
+- Implement proper column mapping
+- Handle missing or invalid data gracefully
+- Implement batch processing for large files
+- Provide detailed error reports for invalid data
+- Support various CSV formats and encodings
+
+## Security
+
+- Implement proper authentication and authorization
+- Sanitize all input data
+- Use environment variables for sensitive information
+- Implement proper CORS policies
+- Handle file uploads securely
+- Validate file types and sizes
+
+## Monitoring and Logging
+
+- Implement structured logging
+- Log important business events
+- Track ETL pipeline metrics
+- Monitor queue health
+- Track API performance metrics
+- Implement proper error tracking
+
+## Testing
+
+- Implement structured logging
+- Log important business events
+- Track ETL pipeline metrics
+- Monitor queue health
+- Track API performance metrics
+- Implement proper error tracking
+
+## Documentation
+
+- Maintain up-to-date API documentation
+- Document database schema changes
+- Include setup instructions in README
+- Document environment variables
+- Include deployment instructions
+- Document error codes and handling
+
+## Performance
+
+- Implement proper database indexing
+- Use connection pooling
+- Implement caching where appropriate
+- Optimize CSV processing for large files
+- Monitor memory usage during file processing
+- Implement proper query optimization
