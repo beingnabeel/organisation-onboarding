@@ -422,6 +422,7 @@ model OrganizationTaxDetail {
   tan_circle_number             String?
   corporate_income_tax_location String?
   created_at                    DateTime     @default(now())
+  updated_at                    DateTime     @default(now())
   organization                  Organization @relation(fields: [org_id], references: [org_id])
 
   @@map("organization_tax_details")
@@ -487,6 +488,7 @@ model Department {
 model EmploymentType {
   employment_type_id String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type_name          String            @db.VarChar
+  type_code          String            @unique @db.VarChar(50)
   description        String?           @db.Text
   created_at         DateTime          @default(now())
   updated_at         DateTime          @default(now())
@@ -500,6 +502,7 @@ model JobTitle {
   job_title_id      String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   org_id            String       @db.Uuid
   title_name        String       @db.VarChar
+  title_code        String       @unique @db.VarChar(50)
   title_description String?      @db.Text
   grade_level       Int?
   created_at        DateTime     @default(now())
@@ -957,6 +960,7 @@ model ProbationPolicy {
   employment_type_id      String?         @db.Uuid
   employee_id             String?         @db.Uuid
   dept_id                 String?         @db.Uuid
+  probation_code          String          @unique @db.VarChar(50)
   probation_period_months Int
   min_extension_months    Int             @default(1)
   max_extension_months    Int?
