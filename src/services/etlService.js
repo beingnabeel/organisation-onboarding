@@ -5,6 +5,8 @@ const {
   generateUUID,
   generateDeterministicUUID,
 } = require("../utils/prismaIdGenerator");
+const os = require("os");
+const { performance } = require("perf_hooks");
 const fs = require("fs");
 
 class ETLService {
@@ -26,7 +28,12 @@ class ETLService {
       "policy_setting",
       "probation_policies",
       "policy_document_versions",
-      "policy_acknowledgement"
+      "policy_acknowledgement",
+      "leave_policy_configuration",
+      "holiday_master_details",
+      "attendance_managment",
+      "shift_setting",
+      "emp_shift_assignment",
     ];
   }
 
@@ -101,45 +108,356 @@ class ETLService {
    * @param {string} filePath - Path to the Excel file
    * @returns {Promise<Object>} - Parsed data from all sheets
    */
+
+  // // further more optimised approach
+  // async parseExcelFile(filePath) {
+  //   try {
+  //     // Improve memory usage with streaming options
+  //     const options = {
+  //       cellDates: true,
+  //       dateNF: "MM/DD/YYYY",
+  //       // Add stream option to reduce memory footprint for large files
+  //       stream: true,
+  //       // Add raw data handling to improve performance
+  //       raw: true,
+  //     };
+
+  //     // Log start of processing
+  //     logger.info({
+  //       message: "Starting Excel file parsing",
+  //       metadata: { filePath },
+  //     });
+
+  //     // Performance measurement
+  //     const startTime = performance.now();
+
+  //     // Use readFile asynchronously
+  //     const workbook = await xlsx.readFile(filePath, options);
+  //     const sheets = workbook.SheetNames;
+
+  //     // Determine optimal batch size based on number of sheets and system resources
+  //     const cpuCount = os.cpus().length;
+  //     const BATCH_SIZE = Math.max(2, Math.min(cpuCount - 1, 8)); // Dynamic batch size based on CPU cores
+
+  //     logger.info({
+  //       message: "Parsing Excel file with optimized settings",
+  //       metadata: {
+  //         totalSheets: sheets.length,
+  //         batchSize: BATCH_SIZE,
+  //         availableCores: cpuCount,
+  //       },
+  //     });
+
+  //     // Preallocate the result object to avoid dynamic resizing
+  //     const parsedData = Object.create(null); // Faster than {}
+
+  //     // Process sheets in batches
+  //     for (let i = 0; i < sheets.length; i += BATCH_SIZE) {
+  //       const batchStartTime = performance.now();
+  //       const batch = sheets.slice(i, i + BATCH_SIZE);
+
+  //       logger.info({
+  //         message: `Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(sheets.length / BATCH_SIZE)}`,
+  //         metadata: {
+  //           batchSheets: batch,
+  //           progress: `${i}/${sheets.length} sheets`,
+  //         },
+  //       });
+
+  //       // Process batch of sheets in parallel with better error handling
+  //       const batchResults = await Promise.all(
+  //         batch.map(async (sheetName) => {
+  //           const sheetStartTime = performance.now();
+  //           try {
+  //             const worksheet = workbook.Sheets[sheetName];
+
+  //             // Check if worksheet exists
+  //             if (!worksheet) {
+  //               logger.warn({
+  //                 message: `Sheet not found: ${sheetName}`,
+  //                 metadata: { sheetName },
+  //               });
+  //               return { sheetName, data: [] };
+  //             }
+
+  //             // Get worksheet dimensions for progress reporting
+  //             const dimensions = xlsx.utils.decode_range(
+  //               worksheet["!ref"] || "A1"
+  //             );
+  //             const estimatedRows = dimensions.e.r - dimensions.s.r + 1;
+
+  //             // Optimize sheet extraction with improved options
+  //             const data = xlsx.utils.sheet_to_json(worksheet, {
+  //               raw: true, // Faster parsing
+  //               defval: null,
+  //               header: 1,
+  //               dateNF: "MM/DD/YYYY",
+  //               // Add blankrows:false to skip empty rows for performance
+  //               blankrows: false,
+  //             });
+
+  //             const sheetEndTime = performance.now();
+  //             logger.info({
+  //               message: `Processed sheet: ${sheetName}`,
+  //               metadata: {
+  //                 sheetName,
+  //                 rowCount: data.length,
+  //                 estimatedRows,
+  //                 processingTimeMs: Math.round(sheetEndTime - sheetStartTime),
+  //               },
+  //             });
+
+  //             return { sheetName, data };
+  //           } catch (error) {
+  //             // Improved error handling with continuation
+  //             logger.error({
+  //               message: `Error processing sheet: ${sheetName}`,
+  //               metadata: {
+  //                 sheetName,
+  //                 error: {
+  //                   message: error.message,
+  //                   stack: error.stack,
+  //                 },
+  //               },
+  //             });
+  //             // Return empty data instead of throwing to allow other sheets to continue
+  //             return { sheetName, data: [], error: error.message };
+  //           }
+  //         })
+  //       );
+
+  //       // Efficiently merge batch results
+  //       for (const { sheetName, data, error } of batchResults) {
+  //         // Skip sheets with errors
+  //         if (!error) {
+  //           parsedData[sheetName] = data;
+  //         }
+  //       }
+
+  //       const batchEndTime = performance.now();
+  //       logger.info({
+  //         message: `Completed batch ${Math.floor(i / BATCH_SIZE) + 1}`,
+  //         metadata: {
+  //           processingTimeMs: Math.round(batchEndTime - batchStartTime),
+  //           sheetsProcessed: batch.length,
+  //         },
+  //       });
+
+  //       // Optional: free memory between batches
+  //       if (global.gc && i + BATCH_SIZE < sheets.length) {
+  //         global.gc();
+  //       }
+  //     }
+
+  //     // Use streaming writer for large output data
+  //     await this.writeFileStream(parsedData, "etlextract.json");
+
+  //     const endTime = performance.now();
+  //     logger.info({
+  //       message: "Successfully wrote data to etlextract.json",
+  //       metadata: {
+  //         sheets: Object.keys(parsedData),
+  //         totalSheets: Object.keys(parsedData).length,
+  //         totalProcessingTimeMs: Math.round(endTime - startTime),
+  //       },
+  //     });
+
+  //     return parsedData;
+  //   } catch (error) {
+  //     logger.error({
+  //       message: "Error parsing Excel file",
+  //       metadata: {
+  //         error: {
+  //           message: error.message,
+  //           stack: error.stack,
+  //           code: error.code,
+  //         },
+  //         filePath,
+  //       },
+  //     });
+  //     throw new AppError(`Failed to parse Excel file: ${error.message}`, 500);
+  //   }
+  // }
+
+  // // Helper method for streaming write of large JSON files
+  // async writeFileStream(data, filename) {
+  //   return new Promise((resolve, reject) => {
+  //     const writeStream = fs.createWriteStream(filename);
+  //     writeStream.write("{\n");
+
+  //     const keys = Object.keys(data);
+  //     keys.forEach((key, index) => {
+  //       const isLast = index === keys.length - 1;
+  //       writeStream.write(
+  //         `  ${JSON.stringify(key)}: ${JSON.stringify(data[key])}${isLast ? "" : ","}\n`
+  //       );
+  //     });
+
+  //     writeStream.write("}\n");
+  //     writeStream.end();
+
+  //     writeStream.on("finish", resolve);
+  //     writeStream.on("error", reject);
+  //   });
+  // }
+
+  // CONVERTING ALL THE EXTRACTED CODE TO LOWERCASE :
   async parseExcelFile(filePath) {
     try {
-      // Configure date formatting
+      // Improve memory usage with streaming options
       const options = {
-        cellDates: true, // Convert Excel dates to JS Date objects
-        dateNF: "MM/DD/YYYY", // Format dates as MM/DD/YYYY
+        cellDates: true,
+        dateNF: "MM/DD/YYYY",
+        // Add stream option to reduce memory footprint for large files
+        stream: true,
+        // Add raw data handling to improve performance
+        raw: true,
       };
 
-      const workbook = xlsx.readFile(filePath, options);
-      const parsedData = {};
+      // Log start of processing
+      logger.info({
+        message: "Starting Excel file parsing",
+        metadata: { filePath },
+      });
 
-      // Process all sheets in the workbook
-      for (const sheetName of workbook.SheetNames) {
-        const worksheet = workbook.Sheets[sheetName];
-        const data = xlsx.utils.sheet_to_json(worksheet, {
-          raw: false, // Don't keep raw values
-          defval: null,
-          header: 1, // Use 1-based array of values
-          dateNF: "MM/DD/YYYY", // Format dates as MM/DD/YYYY
-        });
+      // Performance measurement
+      const startTime = performance.now();
+
+      // Use readFile asynchronously
+      const workbook = await xlsx.readFile(filePath, options);
+      const sheets = workbook.SheetNames;
+
+      // Determine optimal batch size based on number of sheets and system resources
+      const cpuCount = os.cpus().length;
+      const BATCH_SIZE = Math.max(2, Math.min(cpuCount - 1, 8)); // Dynamic batch size based on CPU cores
+
+      logger.info({
+        message: "Parsing Excel file with optimized settings",
+        metadata: {
+          totalSheets: sheets.length,
+          batchSize: BATCH_SIZE,
+          availableCores: cpuCount,
+        },
+      });
+
+      // Preallocate the result object to avoid dynamic resizing
+      const parsedData = Object.create(null); // Faster than {}
+
+      // Process sheets in batches
+      for (let i = 0; i < sheets.length; i += BATCH_SIZE) {
+        const batchStartTime = performance.now();
+        const batch = sheets.slice(i, i + BATCH_SIZE);
 
         logger.info({
-          message: `Processing sheet: ${sheetName}`,
+          message: `Processing batch ${Math.floor(i / BATCH_SIZE) + 1}/${Math.ceil(sheets.length / BATCH_SIZE)}`,
           metadata: {
-            sheetName,
-            rowCount: data.length,
+            batchSheets: batch,
+            progress: `${i}/${sheets.length} sheets`,
           },
         });
 
-        parsedData[sheetName] = data;
+        // Process batch of sheets in parallel with better error handling
+        const batchResults = await Promise.all(
+          batch.map(async (sheetName) => {
+            const sheetStartTime = performance.now();
+            try {
+              const worksheet = workbook.Sheets[sheetName];
+
+              // Check if worksheet exists
+              if (!worksheet) {
+                logger.warn({
+                  message: `Sheet not found: ${sheetName}`,
+                  metadata: { sheetName },
+                });
+                return { sheetName, data: [] };
+              }
+
+              // Get worksheet dimensions for progress reporting
+              const dimensions = xlsx.utils.decode_range(
+                worksheet["!ref"] || "A1"
+              );
+              const estimatedRows = dimensions.e.r - dimensions.s.r + 1;
+
+              // Optimize sheet extraction with improved options
+              const data = xlsx.utils.sheet_to_json(worksheet, {
+                raw: true, // Faster parsing
+                defval: null,
+                header: 1,
+                dateNF: "MM/DD/YYYY",
+                // Add blankrows:false to skip empty rows for performance
+                blankrows: false,
+              });
+
+              // Convert all text data to lowercase
+              const lowercaseData = data.map((row) =>
+                row.map((cell) =>
+                  typeof cell === "string" ? cell.toLowerCase() : cell
+                )
+              );
+
+              const sheetEndTime = performance.now();
+              logger.info({
+                message: `Processed sheet: ${sheetName}`,
+                metadata: {
+                  sheetName,
+                  rowCount: lowercaseData.length,
+                  estimatedRows,
+                  processingTimeMs: Math.round(sheetEndTime - sheetStartTime),
+                },
+              });
+
+              return { sheetName, data: lowercaseData };
+            } catch (error) {
+              // Improved error handling with continuation
+              logger.error({
+                message: `Error processing sheet: ${sheetName}`,
+                metadata: {
+                  sheetName,
+                  error: {
+                    message: error.message,
+                    stack: error.stack,
+                  },
+                },
+              });
+              // Return empty data instead of throwing to allow other sheets to continue
+              return { sheetName, data: [], error: error.message };
+            }
+          })
+        );
+
+        // Efficiently merge batch results
+        for (const { sheetName, data, error } of batchResults) {
+          // Skip sheets with errors
+          if (!error) {
+            parsedData[sheetName] = data;
+          }
+        }
+
+        const batchEndTime = performance.now();
+        logger.info({
+          message: `Completed batch ${Math.floor(i / BATCH_SIZE) + 1}`,
+          metadata: {
+            processingTimeMs: Math.round(batchEndTime - batchStartTime),
+            sheetsProcessed: batch.length,
+          },
+        });
+
+        // Optional: free memory between batches
+        if (global.gc && i + BATCH_SIZE < sheets.length) {
+          global.gc();
+        }
       }
 
-      // Write parsed data to etlextract.json
-      await this.writeFile(parsedData, "etlextract.json");
+      // Use streaming writer for large output data
+      await this.writeFileStream(parsedData, "etlextract.json");
+
+      const endTime = performance.now();
       logger.info({
         message: "Successfully wrote data to etlextract.json",
         metadata: {
           sheets: Object.keys(parsedData),
           totalSheets: Object.keys(parsedData).length,
+          totalProcessingTimeMs: Math.round(endTime - startTime),
         },
       });
 
@@ -151,13 +469,36 @@ class ETLService {
           error: {
             message: error.message,
             stack: error.stack,
+            code: error.code,
           },
+          filePath,
         },
       });
-      throw new AppError("Failed to parse Excel file", 500);
+      throw new AppError(`Failed to parse Excel file: ${error.message}`, 500);
     }
   }
 
+  // Helper method for streaming write of large JSON files
+  async writeFileStream(data, filename) {
+    return new Promise((resolve, reject) => {
+      const writeStream = fs.createWriteStream(filename);
+      writeStream.write("{\n");
+
+      const keys = Object.keys(data);
+      keys.forEach((key, index) => {
+        const isLast = index === keys.length - 1;
+        writeStream.write(
+          `  ${JSON.stringify(key)}: ${JSON.stringify(data[key])}${isLast ? "" : ","}\n`
+        );
+      });
+
+      writeStream.write("}\n");
+      writeStream.end();
+
+      writeStream.on("finish", resolve);
+      writeStream.on("error", reject);
+    });
+  }
   /**
    * Write data to a file
    * @param {Object} data - The data to write
@@ -914,6 +1255,50 @@ class ETLService {
           }
         }
 
+        // // First, collect all unique banks to avoid duplicate bank records
+        // const uniqueBanks = new Map();
+        // for (
+        //   let rowIndex = 2;
+        //   rowIndex < data.Emp_financial_details.length;
+        //   rowIndex++
+        // ) {
+        //   const financialData = data.Emp_financial_details[rowIndex];
+
+        //   // Create a map of header to value for easier access
+        //   const financialDataMap = {};
+        //   headers.forEach((header, index) => {
+        //     if (header) {
+        //       financialDataMap[header] = financialData[index];
+        //     }
+        //   });
+
+        //   if (financialDataMap.bank_type && financialDataMap.bank_code) {
+        //     const bankId = generateDeterministicUUID(
+        //       financialDataMap.bank_type || "",
+        //       financialDataMap.bank_code || ""
+        //     );
+
+        //     if (!uniqueBanks.has(bankId)) {
+        //       uniqueBanks.set(bankId, {
+        //         id: bankId,
+        //         type: financialDataMap.bank_type,
+        //         name: financialDataMap.bank_name,
+        //         code: financialDataMap.bank_code,
+        //         swift: financialDataMap.swift_code,
+        //       });
+        //     }
+        //   }
+        // }
+
+        // // Add bank information if not already in createdEntities
+        // uniqueBanks.forEach((bank) => {
+        //   if (!createdEntities.banks[bank.id]) {
+        //     createdEntities.banks[bank.id] = true;
+        //     // We could add bank objects to transformedData here if needed
+        //   }
+        // });
+
+        // MODIFIED CODE FOR ADDING THE BANK OBJECT(BANK MASTER)
         // First, collect all unique banks to avoid duplicate bank records
         const uniqueBanks = new Map();
         for (
@@ -949,14 +1334,27 @@ class ETLService {
           }
         }
 
-        // Add bank information if not already in createdEntities
+        // Add bank information to transformedData if not already in createdEntities
         uniqueBanks.forEach((bank) => {
           if (!createdEntities.banks[bank.id]) {
             createdEntities.banks[bank.id] = true;
-            // We could add bank objects to transformedData here if needed
+
+            // Create and add bank master object to transformedData
+            const currentDateTime = new Date().toISOString();
+            const bankMasterObj = {
+              bank_id: bank.id,
+              bank_type: bank.type || "",
+              bank_name: bank.name || "",
+              bank_code: bank.code || "",
+              swift_code: bank.swift || "",
+              is_active: true,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            transformedData.push(bankMasterObj);
           }
         });
-
         // Now process each employee's financial details
         for (
           let rowIndex = 2;
@@ -1624,9 +2022,15 @@ class ETLService {
 
             // Convert boolean fields
             let considerPreviousMonth = cycleDataMap.consider_previous_month;
-            if (considerPreviousMonth === "TRUE" || considerPreviousMonth === "true") {
+            if (
+              considerPreviousMonth === "TRUE" ||
+              considerPreviousMonth === "true"
+            ) {
               considerPreviousMonth = true;
-            } else if (considerPreviousMonth === "FALSE" || considerPreviousMonth === "false") {
+            } else if (
+              considerPreviousMonth === "FALSE" ||
+              considerPreviousMonth === "false"
+            ) {
               considerPreviousMonth = false;
             } else {
               considerPreviousMonth = null;
@@ -1668,11 +2072,7 @@ class ETLService {
         const createdPayrollRuns = {};
 
         // Process each payroll run row starting from index 2 (skipping header rows)
-        for (
-          let rowIndex = 2;
-          rowIndex < data.payroll_run.length;
-          rowIndex++
-        ) {
+        for (let rowIndex = 2; rowIndex < data.payroll_run.length; rowIndex++) {
           const runData = data.payroll_run[rowIndex];
 
           // Create a map of header to value for easier access
@@ -1721,22 +2121,22 @@ class ETLService {
             if (isNaN(totalEmployees)) totalEmployees = null;
 
             let totalGross = runDataMap.total_gross;
-            if (totalGross && typeof totalGross === 'string') {
-              totalGross = totalGross.replace(/,/g, '');
+            if (totalGross && typeof totalGross === "string") {
+              totalGross = totalGross.replace(/,/g, "");
               totalGross = parseFloat(totalGross);
               if (isNaN(totalGross)) totalGross = null;
             }
 
             let totalDeductions = runDataMap.total_deductions;
-            if (totalDeductions && typeof totalDeductions === 'string') {
-              totalDeductions = totalDeductions.replace(/,/g, '');
+            if (totalDeductions && typeof totalDeductions === "string") {
+              totalDeductions = totalDeductions.replace(/,/g, "");
               totalDeductions = parseFloat(totalDeductions);
               if (isNaN(totalDeductions)) totalDeductions = null;
             }
 
             let totalNetPay = runDataMap.total_net_pay;
-            if (totalNetPay && typeof totalNetPay === 'string') {
-              totalNetPay = totalNetPay.replace(/,/g, '');
+            if (totalNetPay && typeof totalNetPay === "string") {
+              totalNetPay = totalNetPay.replace(/,/g, "");
               totalNetPay = parseFloat(totalNetPay);
               if (isNaN(totalNetPay)) totalNetPay = null;
             }
@@ -1787,10 +2187,10 @@ class ETLService {
       if (data.policy_modules && data.policy_modules.length >= 3) {
         // Headers are in the second row (index 1)
         const headers = data.policy_modules[1];
-        
+
         // Track created policy modules to avoid duplicates
         const createdPolicyModules = {};
-        
+
         // Process each policy module row starting from index 2 (skipping header rows)
         for (
           let rowIndex = 2;
@@ -1798,7 +2198,7 @@ class ETLService {
           rowIndex++
         ) {
           const moduleData = data.policy_modules[rowIndex];
-          
+
           // Create a map of header to value for easier access
           const moduleDataMap = {};
           headers.forEach((header, index) => {
@@ -1806,35 +2206,36 @@ class ETLService {
               moduleDataMap[header] = moduleData[index];
             }
           });
-          
+
           // Skip if required fields are missing
-          if (!moduleDataMap.module_code || !moduleDataMap.module_category) continue;
-          
+          if (!moduleDataMap.module_code || !moduleDataMap.module_category)
+            continue;
+
           // Generate unique IDs
           const moduleId = generateDeterministicUUID(
             moduleDataMap.module_code || "",
             moduleDataMap.module_category || ""
           );
-          
+
           const orgId = generateDeterministicUUID(
             moduleDataMap.auth_signatory_designation || "",
             moduleDataMap.cin || ""
           );
-          
+
           const createdById = generateDeterministicUUID(
             moduleDataMap.created_by_emp_number || "",
             moduleDataMap.created_by_emp_first_name || ""
           );
-          
+
           const updatedById = generateDeterministicUUID(
             moduleDataMap.updated_by_emp_number || "",
             moduleDataMap.updated_by_emp_name || ""
           );
-          
+
           // Check if this policy module has been processed already
           if (!createdPolicyModules[moduleId]) {
             createdPolicyModules[moduleId] = true;
-            
+
             // Convert boolean fields
             let isMandatory = moduleDataMap.is_mandatory;
             if (isMandatory === "TRUE" || isMandatory === "true") {
@@ -1844,7 +2245,7 @@ class ETLService {
             } else {
               isMandatory = null;
             }
-            
+
             // Create policy module object
             const policyModuleObj = {
               module_id: moduleId,
@@ -1863,13 +2264,13 @@ class ETLService {
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
-            
+
             // Debug log to verify the object has all required fields
             console.log(
               "Policy Module Object:",
               JSON.stringify(policyModuleObj, null, 2)
             );
-            
+
             transformedData.push(policyModuleObj);
           }
         }
@@ -1879,10 +2280,10 @@ class ETLService {
       if (data.policy_setting && data.policy_setting.length >= 3) {
         // Headers are in the second row (index 1)
         const headers = data.policy_setting[1];
-        
+
         // Track created policy settings to avoid duplicates
         const createdPolicySettings = {};
-        
+
         // Process each policy setting row starting from index 2 (skipping header rows)
         for (
           let rowIndex = 2;
@@ -1890,7 +2291,7 @@ class ETLService {
           rowIndex++
         ) {
           const settingData = data.policy_setting[rowIndex];
-          
+
           // Create a map of header to value for easier access
           const settingDataMap = {};
           headers.forEach((header, index) => {
@@ -1898,40 +2299,41 @@ class ETLService {
               settingDataMap[header] = settingData[index];
             }
           });
-          
+
           // Skip if required fields are missing
-          if (!settingDataMap.setting_name || !settingDataMap.setting_key) continue;
-          
+          if (!settingDataMap.setting_name || !settingDataMap.setting_key)
+            continue;
+
           // Generate unique IDs
           const settingId = generateDeterministicUUID(
             settingDataMap.setting_name || "",
             settingDataMap.setting_key || ""
           );
-          
+
           const moduleId = generateDeterministicUUID(
             settingDataMap.module_code || "",
             settingDataMap.module_category || ""
           );
-          
+
           const orgId = generateDeterministicUUID(
             settingDataMap.auth_signatory_designation || "",
             settingDataMap.cin || ""
           );
-          
+
           const createdById = generateDeterministicUUID(
             settingDataMap.created_by_emp_number || "",
             settingDataMap.created_by_emp_first_name || ""
           );
-          
+
           const updatedById = generateDeterministicUUID(
             settingDataMap.updated_by_emp_number || "",
             settingDataMap.updated_by_emp_first_name || ""
           );
-          
+
           // Check if this policy setting has been processed already
           if (!createdPolicySettings[settingId]) {
             createdPolicySettings[settingId] = true;
-            
+
             // Convert boolean fields
             let isEncrypted = settingDataMap.is_encrypted;
             if (isEncrypted === "TRUE" || isEncrypted === "true") {
@@ -1941,16 +2343,19 @@ class ETLService {
             } else {
               isEncrypted = null;
             }
-            
+
             let isConfigurable = settingDataMap.is_configurable;
             if (isConfigurable === "TRUE" || isConfigurable === "true") {
               isConfigurable = true;
-            } else if (isConfigurable === "FALSE" || isConfigurable === "false") {
+            } else if (
+              isConfigurable === "FALSE" ||
+              isConfigurable === "false"
+            ) {
               isConfigurable = false;
             } else {
               isConfigurable = null;
             }
-            
+
             // Create policy setting object
             const policySettingObj = {
               setting_id: settingId,
@@ -1971,13 +2376,13 @@ class ETLService {
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
-            
+
             // Debug log to verify the object has all required fields
             console.log(
               "Policy Setting Object:",
               JSON.stringify(policySettingObj, null, 2)
             );
-            
+
             transformedData.push(policySettingObj);
           }
         }
@@ -1987,10 +2392,10 @@ class ETLService {
       if (data.probation_policies && data.probation_policies.length >= 3) {
         // Headers are in the second row (index 1)
         const headers = data.probation_policies[1];
-        
+
         // Track created probation policies to avoid duplicates
         const createdProbationPolicies = {};
-        
+
         // Process each probation policy row starting from index 2 (skipping header rows)
         for (
           let rowIndex = 2;
@@ -1998,7 +2403,7 @@ class ETLService {
           rowIndex++
         ) {
           const policyData = data.probation_policies[rowIndex];
-          
+
           // Create a map of header to value for easier access
           const policyDataMap = {};
           headers.forEach((header, index) => {
@@ -2006,60 +2411,67 @@ class ETLService {
               policyDataMap[header] = policyData[index];
             }
           });
-          
+
           // Skip if required fields are missing
-          if (!policyDataMap.probation_code || !policyDataMap.probation_period_months) continue;
-          
+          if (
+            !policyDataMap.probation_code ||
+            !policyDataMap.probation_period_months
+          )
+            continue;
+
           // Generate unique IDs
           const policyId = generateDeterministicUUID(
             policyDataMap.probation_period_months || "",
             policyDataMap.probation_code || ""
           );
-          
+
           const orgId = generateDeterministicUUID(
             policyDataMap.auth_signatory_designation || "",
             policyDataMap.cin || ""
           );
-          
+
           const employmentTypeId = generateDeterministicUUID(
             policyDataMap.employement_type_name || "",
             policyDataMap.employment_type_code || ""
           );
-          
+
           const employeeId = generateDeterministicUUID(
             policyDataMap.employee_number || "",
             policyDataMap.employee_first_name || ""
           );
-          
+
           const deptId = generateDeterministicUUID(
             policyDataMap.dept_type_code || "",
             policyDataMap.dept_code || ""
           );
-          
+
           const createdById = generateDeterministicUUID(
             policyDataMap.created_by_emp_number || "",
             policyDataMap.created_by_emp_first_name || ""
           );
-          
+
           const updatedById = generateDeterministicUUID(
             policyDataMap.updated_by_emp_number || "",
             policyDataMap.updated_by_emp_first_name || ""
           );
-          
+
           // Check if this probation policy has been processed already
           if (!createdProbationPolicies[policyId]) {
             createdProbationPolicies[policyId] = true;
-            
+
             // Convert boolean fields
             let extensionAllowed = policyDataMap.extension_allowed;
             if (extensionAllowed === "TRUE" || extensionAllowed === "true") {
               extensionAllowed = true;
-            } else if (extensionAllowed === "FALSE" || extensionAllowed === "false") {
+            } else if (
+              extensionAllowed === "FALSE" ||
+              extensionAllowed === "false"
+            ) {
               extensionAllowed = false;
             } else {
               extensionAllowed = null;
             }
-            
+
             let autoConfirm = policyDataMap.auto_confirm;
             if (autoConfirm === "TRUE" || autoConfirm === "true") {
               autoConfirm = true;
@@ -2068,24 +2480,33 @@ class ETLService {
             } else {
               autoConfirm = null;
             }
-            
+
             let reviewRequired = policyDataMap.review_required;
             if (reviewRequired === "TRUE" || reviewRequired === "true") {
               reviewRequired = true;
-            } else if (reviewRequired === "FALSE" || reviewRequired === "false") {
+            } else if (
+              reviewRequired === "FALSE" ||
+              reviewRequired === "false"
+            ) {
               reviewRequired = false;
             } else {
               reviewRequired = null;
             }
-            
+
             // Convert numeric fields
-            const probationPeriodMonths = parseInt(policyDataMap.probation_period_months) || null;
-            const minExtensionMonths = parseInt(policyDataMap.min_extension_months) || null;
-            const maxExtensionMonths = parseInt(policyDataMap.max_extension_months) || null;
-            const maxExtensions = parseInt(policyDataMap.max_extensions) || null;
-            const noticePeriodDays = parseInt(policyDataMap.notice_period_days) || null;
-            const reviewBeforeDays = parseInt(policyDataMap.review_before_days) || null;
-            
+            const probationPeriodMonths =
+              parseInt(policyDataMap.probation_period_months) || null;
+            const minExtensionMonths =
+              parseInt(policyDataMap.min_extension_months) || null;
+            const maxExtensionMonths =
+              parseInt(policyDataMap.max_extension_months) || null;
+            const maxExtensions =
+              parseInt(policyDataMap.max_extensions) || null;
+            const noticePeriodDays =
+              parseInt(policyDataMap.notice_period_days) || null;
+            const reviewBeforeDays =
+              parseInt(policyDataMap.review_before_days) || null;
+
             // Create probation policy object
             const probationPolicyObj = {
               policy_id: policyId,
@@ -2109,26 +2530,29 @@ class ETLService {
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
-            
+
             // Debug log to verify the object has all required fields
             console.log(
               "Probation Policy Object:",
               JSON.stringify(probationPolicyObj, null, 2)
             );
-            
+
             transformedData.push(probationPolicyObj);
           }
         }
       }
 
       // Process policy_document_versions sheet if it exists
-      if (data.policy_document_versions && data.policy_document_versions.length >= 3) {
+      if (
+        data.policy_document_versions &&
+        data.policy_document_versions.length >= 3
+      ) {
         // Headers are in the second row (index 1)
         const headers = data.policy_document_versions[1];
-        
+
         // Track created policy document versions to avoid duplicates
         const createdPolicyDocumentVersions = {};
-        
+
         // Process each policy document version row starting from index 2 (skipping header rows)
         for (
           let rowIndex = 2;
@@ -2136,7 +2560,7 @@ class ETLService {
           rowIndex++
         ) {
           const versionData = data.policy_document_versions[rowIndex];
-          
+
           // Create a map of header to value for easier access
           const versionDataMap = {};
           headers.forEach((header, index) => {
@@ -2144,40 +2568,41 @@ class ETLService {
               versionDataMap[header] = versionData[index];
             }
           });
-          
+
           // Skip if required fields are missing
-          if (!versionDataMap.module_code || !versionDataMap.version_number) continue;
-          
+          if (!versionDataMap.module_code || !versionDataMap.version_number)
+            continue;
+
           // Generate unique IDs
           const versionId = generateDeterministicUUID(
             versionDataMap.module_code || "",
             versionDataMap.version_number || ""
           );
-          
+
           const moduleId = generateDeterministicUUID(
             versionDataMap.module_code || "",
             versionDataMap.module_category || ""
           );
-          
+
           const approvedById = generateDeterministicUUID(
             versionDataMap.approved_by_emp_number || "",
             versionDataMap.approved_by_emp_first_name || ""
           );
-          
+
           const createdById = generateDeterministicUUID(
             versionDataMap.created_by_emp_number || "",
             versionDataMap.created_by_emp_first_name || ""
           );
-          
+
           const updatedById = generateDeterministicUUID(
             versionDataMap.updated_by_emp_number || "",
             versionDataMap.updated_by_emp_first_name || ""
           );
-          
+
           // Check if this policy document version has been processed already
           if (!createdPolicyDocumentVersions[versionId]) {
             createdPolicyDocumentVersions[versionId] = true;
-            
+
             // Create policy document version object
             const policyDocumentVersionObj = {
               version_id: versionId,
@@ -2195,26 +2620,29 @@ class ETLService {
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
-            
+
             // Debug log to verify the object has all required fields
             console.log(
               "Policy Document Version Object:",
               JSON.stringify(policyDocumentVersionObj, null, 2)
             );
-            
+
             transformedData.push(policyDocumentVersionObj);
           }
         }
       }
 
       // Process policy_acknowledgement sheet if it exists
-      if (data.policy_acknowledgement && data.policy_acknowledgement.length >= 3) {
+      if (
+        data.policy_acknowledgement &&
+        data.policy_acknowledgement.length >= 3
+      ) {
         // Headers are in the second row (index 1)
         const headers = data.policy_acknowledgement[1];
-        
+
         // Track created policy acknowledgements to avoid duplicates
         const createdPolicyAcknowledgements = {};
-        
+
         // Process each policy acknowledgement row starting from index 2 (skipping header rows)
         for (
           let rowIndex = 2;
@@ -2222,7 +2650,7 @@ class ETLService {
           rowIndex++
         ) {
           const acknowledgementData = data.policy_acknowledgement[rowIndex];
-          
+
           // Create a map of header to value for easier access
           const acknowledgementDataMap = {};
           headers.forEach((header, index) => {
@@ -2230,51 +2658,760 @@ class ETLService {
               acknowledgementDataMap[header] = acknowledgementData[index];
             }
           });
-          
+
           // Skip if required fields are missing
-          if (!acknowledgementDataMap.employee_number || !acknowledgementDataMap.module_code) continue;
-          
+          if (
+            !acknowledgementDataMap.employee_number ||
+            !acknowledgementDataMap.module_code
+          )
+            continue;
+
           // Generate unique IDs
           const acknowledgementId = generateDeterministicUUID(
             acknowledgementDataMap.employee_number || "",
             acknowledgementDataMap.acknowledgement_type || ""
           );
-          
+
           const versionId = generateDeterministicUUID(
             acknowledgementDataMap.module_code || "",
             acknowledgementDataMap.version_number || ""
           );
-          
+
           const employeeId = generateDeterministicUUID(
             acknowledgementDataMap.employee_number || "",
             acknowledgementDataMap.emp_first_name || ""
           );
-          
+
           // Check if this policy acknowledgement has been processed already
           if (!createdPolicyAcknowledgements[acknowledgementId]) {
             createdPolicyAcknowledgements[acknowledgementId] = true;
-            
+
             // Create policy acknowledgement object
             const policyAcknowledgementObj = {
               acknowledgement_id: acknowledgementId,
               version_id: versionId,
               employee_id: employeeId,
               acknowledged_at: acknowledgementDataMap.acknowledged_at || null,
-              acknowledgement_type: acknowledgementDataMap.acknowledgement_type || "",
+              acknowledgement_type:
+                acknowledgementDataMap.acknowledgement_type || "",
               ip_address: acknowledgementDataMap.ip_address || "",
               user_agent: acknowledgementDataMap.user_agent || "",
               comments: acknowledgementDataMap.comments || "",
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
-            
+
             // Debug log to verify the object has all required fields
             console.log(
               "Policy Acknowledgement Object:",
               JSON.stringify(policyAcknowledgementObj, null, 2)
             );
-            
+
             transformedData.push(policyAcknowledgementObj);
+          }
+        }
+      }
+
+      // Process leave_policy_configuration sheet if it exists
+      if (
+        data.leave_policy_configuration &&
+        data.leave_policy_configuration.length >= 3
+      ) {
+        // Headers are in the second row (index 1)
+        const headers = data.leave_policy_configuration[1];
+
+        // Track created leave policy configurations to avoid duplicates
+        const createdLeavePolicyConfigurations = {};
+
+        // Process each leave policy configuration row starting from index 2 (skipping header rows)
+        for (
+          let rowIndex = 2;
+          rowIndex < data.leave_policy_configuration.length;
+          rowIndex++
+        ) {
+          const configData = data.leave_policy_configuration[rowIndex];
+
+          // Create a map of header to value for easier access
+          const configDataMap = {};
+          headers.forEach((header, index) => {
+            if (header) {
+              configDataMap[header] = configData[index];
+            }
+          });
+
+          // Skip if required fields are missing
+          if (!configDataMap.leave_type || !configDataMap.module_code) continue;
+
+          // Generate unique IDs
+          const configId = generateDeterministicUUID(
+            configDataMap.leave_type || "",
+            configDataMap.accural_frequency || ""
+          );
+
+          const moduleId = generateDeterministicUUID(
+            configDataMap.module_code || "",
+            configDataMap.module_category || ""
+          );
+
+          const orgId = generateDeterministicUUID(
+            configDataMap.auth_signatory_designation || "",
+            configDataMap.cin || ""
+          );
+
+          const createdById = generateDeterministicUUID(
+            configDataMap.created_by_emp_number || "",
+            configDataMap.created_by_emp_first_name || ""
+          );
+
+          const updatedById = generateDeterministicUUID(
+            configDataMap.updated_by_emp_number || "",
+            configDataMap.updated_by_emp_first_name || ""
+          );
+
+          // Check if this leave policy configuration has been processed already
+          if (!createdLeavePolicyConfigurations[configId]) {
+            createdLeavePolicyConfigurations[configId] = true;
+
+            // Convert boolean fields
+            let isEncashable = configDataMap.is_encashable;
+            if (isEncashable === "TRUE" || isEncashable === "true") {
+              isEncashable = true;
+            } else if (isEncashable === "FALSE" || isEncashable === "false") {
+              isEncashable = false;
+            } else {
+              isEncashable = null;
+            }
+
+            let requiresApproval = configDataMap.requires_approval;
+            if (requiresApproval === "TRUE" || requiresApproval === "true") {
+              requiresApproval = true;
+            } else if (
+              requiresApproval === "FALSE" ||
+              requiresApproval === "false"
+            ) {
+              requiresApproval = false;
+            } else {
+              requiresApproval = null;
+            }
+
+            let requiresDocuments = configDataMap.requires_documents;
+            if (requiresDocuments === "TRUE" || requiresDocuments === "true") {
+              requiresDocuments = true;
+            } else if (
+              requiresDocuments === "FALSE" ||
+              requiresDocuments === "false"
+            ) {
+              requiresDocuments = false;
+            } else {
+              requiresDocuments = null;
+            }
+
+            let prorataBasis = configDataMap.prorata_basis;
+            if (prorataBasis === "TRUE" || prorataBasis === "true") {
+              prorataBasis = true;
+            } else if (prorataBasis === "FALSE" || prorataBasis === "false") {
+              prorataBasis = false;
+            } else {
+              prorataBasis = null;
+            }
+
+            // Convert numeric fields
+            const daysPerYear = parseFloat(configDataMap.days_per_year) || null;
+            const minDaysPerRequest =
+              parseInt(configDataMap.min_days_per_request) || null;
+            const maxDaysPerRequest =
+              parseInt(configDataMap.max_days_per_request) || null;
+            const minNoticeDays =
+              parseInt(configDataMap.min_notice_days) || null;
+            const maxCarryForwardDays =
+              parseInt(configDataMap.max_carry_forward_days) || null;
+            const carryForwardValidityMonths =
+              parseInt(configDataMap.carry_forward_validity_months) || null;
+            const encashmentLimit =
+              parseInt(configDataMap.encashment_limit) || null;
+            const documentSubmissionDays =
+              parseInt(configDataMap.document_submission_days) || null;
+            const applicableFromMonths =
+              parseInt(configDataMap.applicable_from_months) || null;
+
+            // Create leave policy configuration object
+            const leavePolicyConfigObj = {
+              config_id: configId,
+              module_id: moduleId,
+              org_id: orgId,
+              leave_type: configDataMap.leave_type || "",
+              accural_frequency: configDataMap.accural_frequency || "",
+              days_per_year: daysPerYear,
+              min_days_per_request: minDaysPerRequest,
+              max_days_per_request: maxDaysPerRequest,
+              min_notice_days: minNoticeDays,
+              max_carry_forward_days: maxCarryForwardDays,
+              carry_forward_validity_months: carryForwardValidityMonths,
+              is_encashable: isEncashable,
+              encashment_limit: encashmentLimit,
+              requires_approval: requiresApproval,
+              requires_documents: requiresDocuments,
+              document_submission_days: documentSubmissionDays,
+              applicable_from_months: applicableFromMonths,
+              prorata_basis: prorataBasis,
+              status: configDataMap.status || "active", // Default status if missing
+              created_by: createdById,
+              updated_by: updatedById,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Leave Policy Configuration Object:",
+              JSON.stringify(leavePolicyConfigObj, null, 2)
+            );
+
+            transformedData.push(leavePolicyConfigObj);
+          }
+        }
+      }
+
+      // Process holiday_master_details sheet if it exists
+      if (
+        data.holiday_master_details &&
+        data.holiday_master_details.length >= 3
+      ) {
+        // Headers are in the second row (index 1)
+        const headers = data.holiday_master_details[1];
+
+        // Track created holiday calendar, holiday masters, and holiday calendar details to avoid duplicates
+        const createdHolidayCalendars = {};
+        const createdHolidayMasters = {};
+        const createdHolidayCalendarDetails = {};
+
+        // Process each holiday master detail row starting from index 2 (skipping header rows)
+        for (
+          let rowIndex = 2;
+          rowIndex < data.holiday_master_details.length;
+          rowIndex++
+        ) {
+          const holidayData = data.holiday_master_details[rowIndex];
+
+          // Create a map of header to value for easier access
+          const holidayDataMap = {};
+          headers.forEach((header, index) => {
+            if (header) {
+              holidayDataMap[header] = holidayData[index];
+            }
+          });
+
+          // Skip if required fields are missing
+          if (
+            !holidayDataMap.year ||
+            !holidayDataMap.start_date ||
+            !holidayDataMap.holiday_name ||
+            !holidayDataMap.holiday_type ||
+            !holidayDataMap.holiday_date
+          )
+            continue;
+
+          // Generate unique IDs
+          const orgId = generateDeterministicUUID(
+            holidayDataMap.auth_signatory_designation || "",
+            holidayDataMap.cin || ""
+          );
+
+          // Generate IDs for HolidayCalendarYear
+          const calendarId = generateDeterministicUUID(
+            holidayDataMap.year || "",
+            holidayDataMap.start_date || ""
+          );
+
+          // Generate IDs for HolidayMaster
+          const holidayId = generateDeterministicUUID(
+            holidayDataMap.holiday_name || "",
+            holidayDataMap.holiday_type || ""
+          );
+
+          // Generate IDs for HolidayCalendarDetails
+          const calendarDetailId = generateDeterministicUUID(
+            holidayDataMap.holiday_date || "",
+            holidayDataMap.is_half_day || ""
+          );
+
+          // Process HolidayCalendarYear if not already created
+          if (!createdHolidayCalendars[calendarId]) {
+            createdHolidayCalendars[calendarId] = true;
+
+            // Convert year to integer
+            const year = parseInt(holidayDataMap.year) || null;
+
+            // Create holiday calendar year object
+            const holidayCalendarYearObj = {
+              calendar_id: calendarId,
+              org_id: orgId,
+              year: year,
+              start_date: holidayDataMap.start_date || null,
+              end_date: holidayDataMap.end_date || null,
+              status: "active", // Default status if missing
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Holiday Calendar Year Object:",
+              JSON.stringify(holidayCalendarYearObj, null, 2)
+            );
+
+            transformedData.push(holidayCalendarYearObj);
+          }
+
+          // Process HolidayMaster if not already created
+          if (!createdHolidayMasters[holidayId]) {
+            createdHolidayMasters[holidayId] = true;
+
+            // Create holiday master object
+            const holidayMasterObj = {
+              holiday_id: holidayId,
+              org_id: orgId,
+              holiday_name: holidayDataMap.holiday_name || "",
+              holiday_type: holidayDataMap.holiday_type || "",
+              recurrence_type: holidayDataMap.recurrence_type || "",
+              description: holidayDataMap.description || "",
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Holiday Master Object:",
+              JSON.stringify(holidayMasterObj, null, 2)
+            );
+
+            transformedData.push(holidayMasterObj);
+          }
+
+          // Process HolidayCalendarDetails for each row (these will be unique per row)
+          if (!createdHolidayCalendarDetails[calendarDetailId]) {
+            createdHolidayCalendarDetails[calendarDetailId] = true;
+
+            // Convert boolean fields
+            let isHalfDay = holidayDataMap.is_half_day;
+            if (isHalfDay === "TRUE" || isHalfDay === "true") {
+              isHalfDay = true;
+            } else if (isHalfDay === "FALSE" || isHalfDay === "false") {
+              isHalfDay = false;
+            } else {
+              isHalfDay = null;
+            }
+
+            // Handle half day type
+            let halfDayType = holidayDataMap.half_day_type;
+            if (halfDayType === "FALSE" || halfDayType === "false") {
+              halfDayType = null;
+            }
+
+            // Create holiday calendar details object
+            const holidayCalendarDetailsObj = {
+              calendar_detail_id: calendarDetailId,
+              calendar_id: calendarId,
+              holiday_id: holidayId,
+              holiday_date: holidayDataMap.holiday_date || null,
+              is_half_day: isHalfDay,
+              half_day_type: halfDayType,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Holiday Calendar Details Object:",
+              JSON.stringify(holidayCalendarDetailsObj, null, 2)
+            );
+
+            transformedData.push(holidayCalendarDetailsObj);
+          }
+        }
+      }
+
+      /**
+       * This file contains the implementation for transforming attendance_managment sheet data
+       * to be integrated into the etlService.js file
+       */
+
+      // Copy and paste this implementation into etlService.js
+      // after the holiday_master_details processing section, before the writeFile call
+
+      // Process attendance_managment sheet if it exists (note the spelling in the Excel sheet)
+      if (data.attendance_managment && data.attendance_managment.length >= 3) {
+        // Headers are in the second row (index 1)
+        const headers = data.attendance_managment[1];
+
+        // Track created attendance settings to avoid duplicates
+        const createdAttendanceSettings = {};
+
+        // Process each attendance management row starting from index 2 (skipping header rows)
+        for (
+          let rowIndex = 2;
+          rowIndex < data.attendance_managment.length;
+          rowIndex++
+        ) {
+          const attendanceData = data.attendance_managment[rowIndex];
+
+          // Create a map of header to value for easier access
+          const attendanceDataMap = {};
+          headers.forEach((header, index) => {
+            if (header) {
+              attendanceDataMap[header] = attendanceData[index];
+            }
+          });
+
+          // Skip if required fields are missing
+          if (!attendanceDataMap.shift_type || !attendanceDataMap.module_code)
+            continue;
+
+          // Generate unique IDs
+          const id = generateDeterministicUUID(
+            attendanceDataMap.shift_type || "",
+            attendanceDataMap.capture_method || ""
+          );
+
+          const orgId = generateDeterministicUUID(
+            attendanceDataMap.auth_signatory_designation || "",
+            attendanceDataMap.cin || ""
+          );
+
+          const moduleId = generateDeterministicUUID(
+            attendanceDataMap.module_code || "",
+            attendanceDataMap.module_category || ""
+          );
+
+          const createdById = generateDeterministicUUID(
+            attendanceDataMap.created_by_emp_number || "",
+            attendanceDataMap.created_by_emp_first_name || ""
+          );
+
+          const updatedById = generateDeterministicUUID(
+            attendanceDataMap.updated_by_emp_number || "",
+            attendanceDataMap.updated_by_emp_first_name || ""
+          );
+
+          // Check if this attendance setting has been processed already
+          if (!createdAttendanceSettings[id]) {
+            createdAttendanceSettings[id] = true;
+
+            // Convert boolean fields
+            let geoFencingEnabled = attendanceDataMap.geo_fencing_enabled;
+            if (geoFencingEnabled === "TRUE" || geoFencingEnabled === "true") {
+              geoFencingEnabled = true;
+            } else if (
+              geoFencingEnabled === "FALSE" ||
+              geoFencingEnabled === "false"
+            ) {
+              geoFencingEnabled = false;
+            } else {
+              geoFencingEnabled = null;
+            }
+
+            let overtimePolicyEnabled =
+              attendanceDataMap.overtime_policy_enabled;
+            if (
+              overtimePolicyEnabled === "TRUE" ||
+              overtimePolicyEnabled === "true"
+            ) {
+              overtimePolicyEnabled = true;
+            } else if (
+              overtimePolicyEnabled === "FALSE" ||
+              overtimePolicyEnabled === "false"
+            ) {
+              overtimePolicyEnabled = false;
+            } else {
+              overtimePolicyEnabled = null;
+            }
+
+            let autoCheckoutEnabled = attendanceDataMap.auto_checkout_enabled;
+            if (
+              autoCheckoutEnabled === "TRUE" ||
+              autoCheckoutEnabled === "true"
+            ) {
+              autoCheckoutEnabled = true;
+            } else if (
+              autoCheckoutEnabled === "FALSE" ||
+              autoCheckoutEnabled === "false"
+            ) {
+              autoCheckoutEnabled = false;
+            } else {
+              autoCheckoutEnabled = null;
+            }
+
+            let regularizationAllowed =
+              attendanceDataMap.regularization_allowed;
+            if (
+              regularizationAllowed === "TRUE" ||
+              regularizationAllowed === "true"
+            ) {
+              regularizationAllowed = true;
+            } else if (
+              regularizationAllowed === "FALSE" ||
+              regularizationAllowed === "false"
+            ) {
+              regularizationAllowed = false;
+            } else {
+              regularizationAllowed = null;
+            }
+
+            // Convert numeric fields
+            const geoFenceRadius =
+              parseInt(attendanceDataMap.geo_fence_radius) || null;
+            const gracePeriodMinutes =
+              parseInt(attendanceDataMap.grace_period_minutes) || null;
+            const halfDayHours =
+              parseInt(attendanceDataMap.half_day_hours) || null;
+            const fullDayHours =
+              parseFloat(attendanceDataMap.full_day_hours) || null;
+            const breakDurationMinutes =
+              parseInt(attendanceDataMap.break_duration_minutes) || null;
+            const workDaysPerWeek =
+              parseInt(attendanceDataMap.work_days_per_week) || null;
+            const minimumOvertimeMinutes =
+              parseInt(attendanceDataMap.minimum_overtime_minutes) || null;
+            const maxOvertimeHoursMonthly =
+              parseInt(attendanceDataMap.max_overtime_hours_monthly) || null;
+            const regularizationWindowDays =
+              parseInt(attendanceDataMap.regularization_window_days) || null;
+            const regularizationLimitMonthly =
+              parseInt(attendanceDataMap.regularization_limit_monthly) || null;
+            const weekendOvertimeMultiplier =
+              parseFloat(attendanceDataMap.weekend_overtime_multiplier) || null;
+            const holidayOvertimeMultiplier =
+              parseFloat(attendanceDataMap.holiday_overtime_multiplier) || null;
+            const flexibleHours =
+              parseInt(attendanceDataMap.flexible_hours) || null;
+
+            // Create attendance setting object
+            const attendanceSettingObj = {
+              id: id,
+              org_id: orgId,
+              module_id: moduleId,
+              capture_method: attendanceDataMap.capture_method || "",
+              geo_fencing_enabled: geoFencingEnabled,
+              geo_fence_radius: geoFenceRadius,
+              shift_type: attendanceDataMap.shift_type || "",
+              shift_start_time: attendanceDataMap.shift_start_time || null,
+              shift_end_time: attendanceDataMap.shift_end_time || null,
+              flexible_hourse: flexibleHours,
+              grace_period_minutes: gracePeriodMinutes,
+              half_day_hours: halfDayHours,
+              full_day_hours: fullDayHours,
+              break_duration_minutes: breakDurationMinutes,
+              work_days_per_week: workDaysPerWeek,
+              overtime_policy_enabled: overtimePolicyEnabled,
+              minimum_overtime_minutes: minimumOvertimeMinutes,
+              overtime_calculation_type:
+                attendanceDataMap.overtime_calculation_type || null,
+              max_overtime_hours_monthly: maxOvertimeHoursMonthly,
+              late_penalty_type: attendanceDataMap.late_penalty_type || "",
+              late_penalty_leave_type:
+                attendanceDataMap.late_penalty_leave_type || null,
+              missing_swipe_policy:
+                attendanceDataMap.missing_swipte_policy || "", // Note: there's a typo in the field name
+              auto_checkout_enabled: autoCheckoutEnabled,
+              auto_checkout_time: attendanceDataMap.auto_checkout_time || null,
+              regularization_allowed: regularizationAllowed,
+              regularization_window_days: regularizationWindowDays,
+              regularization_limit_monthly: regularizationLimitMonthly,
+              weekend_overtime_multiplier: weekendOvertimeMultiplier,
+              holiday_overtime_multiplier: holidayOvertimeMultiplier,
+              created_by: createdById,
+              updated_by: updatedById,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Attendance Setting Object:",
+              JSON.stringify(attendanceSettingObj, null, 2)
+            );
+
+            transformedData.push(attendanceSettingObj);
+          }
+        }
+      }
+
+      // Process shift_setting sheet if it exists
+      if (data.shift_setting && data.shift_setting.length >= 3) {
+        // Headers are in the second row (index 1)
+        const headers = data.shift_setting[1];
+
+        // Track created shift configurations to avoid duplicates
+        const createdShiftConfigurations = {};
+
+        // Process each shift setting row starting from index 2 (skipping header rows)
+        for (
+          let rowIndex = 2;
+          rowIndex < data.shift_setting.length;
+          rowIndex++
+        ) {
+          const shiftData = data.shift_setting[rowIndex];
+
+          // Create a map of header to value for easier access
+          const shiftDataMap = {};
+          headers.forEach((header, index) => {
+            if (header) {
+              shiftDataMap[header] = shiftData[index];
+            }
+          });
+
+          // Skip if required fields are missing
+          if (!shiftDataMap.shift_name || !shiftDataMap.shift_type) continue;
+
+          // Generate unique IDs
+          const shiftId = generateDeterministicUUID(
+            shiftDataMap.shift_name || "",
+            shiftDataMap.shift_type || ""
+          );
+
+          const orgId = generateDeterministicUUID(
+            shiftDataMap.auth_signatory_designation || "",
+            shiftDataMap.cin || ""
+          );
+
+          const createdById = generateDeterministicUUID(
+            shiftDataMap.created_by_emp_number || "",
+            shiftDataMap.created_by_emp_first_name || ""
+          );
+
+          const updatedById = generateDeterministicUUID(
+            shiftDataMap.updated_by_emp_number || "",
+            shiftDataMap.updated_by_emp_first_name || ""
+          );
+
+          // Check if this shift configuration has been processed already
+          if (!createdShiftConfigurations[shiftId]) {
+            createdShiftConfigurations[shiftId] = true;
+
+            // Convert numeric fields
+            const flexibleHours = parseInt(shiftDataMap.flexible_hours) || null;
+            const breakDuration = parseInt(shiftDataMap.break_duration) || null;
+            const gracePeriodMinutes =
+              parseInt(shiftDataMap.grace_period_minutes) || null;
+            const halfDayHours =
+              parseFloat(shiftDataMap.half_day_hours) || null;
+            const fullDayHours =
+              parseFloat(shiftDataMap.full_day_hours) || null;
+
+            // Create shift configuration object
+            const shiftConfigurationObj = {
+              shift_id: shiftId,
+              org_id: orgId,
+              shift_name: shiftDataMap.shift_name || "",
+              shift_type: shiftDataMap.shift_type || "",
+              start_time: shiftDataMap.start_time || null,
+              end_time: shiftDataMap.end_time || null,
+              flexible_hours: flexibleHours,
+              break_duration: breakDuration,
+              grace_period_minutes: gracePeriodMinutes,
+              half_day_hours: halfDayHours,
+              full_day_hours: fullDayHours,
+              description: shiftDataMap.description || "",
+              status: "active", // Default status as active
+              created_by: createdById,
+              updated_by: updatedById,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Shift Configuration Object:",
+              JSON.stringify(shiftConfigurationObj, null, 2)
+            );
+
+            transformedData.push(shiftConfigurationObj);
+          }
+        }
+      }
+
+      // Process emp_shift_assignment sheet if it exists
+      if (data.emp_shift_assignment && data.emp_shift_assignment.length >= 3) {
+        // Headers are in the second row (index 1)
+        const headers = data.emp_shift_assignment[1];
+
+        // Track created shift assignments to avoid duplicates
+        const createdShiftAssignments = {};
+
+        // Process each shift assignment row starting from index 2 (skipping header rows)
+        for (
+          let rowIndex = 2;
+          rowIndex < data.emp_shift_assignment.length;
+          rowIndex++
+        ) {
+          const assignmentData = data.emp_shift_assignment[rowIndex];
+
+          // Create a map of header to value for easier access
+          const assignmentDataMap = {};
+          headers.forEach((header, index) => {
+            if (header) {
+              assignmentDataMap[header] = assignmentData[index];
+            }
+          });
+
+          // Skip if required fields are missing
+          if (
+            !assignmentDataMap.employee_number ||
+            !assignmentDataMap.shift_name ||
+            !assignmentDataMap.effective_from
+          )
+            continue;
+
+          // Generate unique IDs
+          const assignmentId = generateDeterministicUUID(
+            assignmentDataMap.shift_name || "",
+            assignmentDataMap.effective_from || ""
+          );
+
+          const employeeId = generateDeterministicUUID(
+            assignmentDataMap.employee_number || "",
+            assignmentDataMap.employee_first_name || ""
+          );
+
+          const shiftId = generateDeterministicUUID(
+            assignmentDataMap.shift_name || "",
+            assignmentDataMap.shift_type || ""
+          );
+
+          const createdById = generateDeterministicUUID(
+            assignmentDataMap.created_by_emp_number || "",
+            assignmentDataMap.created_by_emp_first_name || ""
+          );
+
+          const updatedById = generateDeterministicUUID(
+            assignmentDataMap.updated_by_emp_number || "",
+            assignmentDataMap.updated_by_emp_first_name || ""
+          );
+
+          // Check if this shift assignment has been processed already
+          if (!createdShiftAssignments[assignmentId]) {
+            createdShiftAssignments[assignmentId] = true;
+
+            // Create employee shift assignment object
+            const employeeShiftAssignmentObj = {
+              assignment_id: assignmentId,
+              employee_id: employeeId,
+              shift_id: shiftId,
+              effective_from: assignmentDataMap.effective_from || null,
+              effective_to: assignmentDataMap.effective_to || null,
+              created_by: createdById,
+              updated_by: updatedById,
+              created_at: currentDateTime,
+              updated_at: currentDateTime,
+            };
+
+            // Debug log to verify the object has all required fields
+            console.log(
+              "Employee Shift Assignment Object:",
+              JSON.stringify(employeeShiftAssignmentObj, null, 2)
+            );
+
+            transformedData.push(employeeShiftAssignmentObj);
           }
         }
       }
