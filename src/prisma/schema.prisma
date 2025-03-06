@@ -28,12 +28,12 @@ enum AccountType {
 }
 
 enum CalculationType {
-  FIXED
-  PERCENTAGE
-  FORMULA
-  HOURLY
-  DAILY
-  PER_UNIT
+  fixed
+  percentage
+  formula
+  hourly
+  daily
+  per_unit
 }
 
 enum EmploymentTypeEnum {
@@ -45,10 +45,10 @@ enum EmploymentTypeEnum {
 }
 
 enum SalaryPaymentMode {
-  BANK_TRANSFER
-  CASH
-  CHEQUE
-  OTHER
+  bank_transfer
+  cash
+  cheque
+  other
 }
 
 enum LeaveType {
@@ -676,7 +676,7 @@ model EmployeeBankDetail {
   branch_name      String                    @db.VarChar
   name_on_account  String                    @db.VarChar
   is_primary       Boolean                   @default(false)
-  status           String                    @db.VarChar
+  status           Status                    @default(active)
   created_at       DateTime                  @default(now())
   updated_at       DateTime                  @default(now())
   employee         Employee                  @relation(fields: [employee_id], references: [employee_id])
@@ -692,7 +692,7 @@ model EmployeeFinancialDetail {
   employee_id                 String              @unique @db.Uuid
   compliance_id               String?             @db.Uuid
   employee_bank_id            String?             @db.Uuid
-  salary_payment_mode         SalaryPaymentMode?  @default(BANK_TRANSFER)
+  salary_payment_mode         SalaryPaymentMode?  @default(bank_transfer)
   pf_details_available        Boolean?
   pf_number                   String?             @unique
   pf_joining_date             DateTime?           @db.Date
@@ -748,7 +748,7 @@ model SalaryComponentMaster {
   component_code        String                     @db.VarChar(20)
   component_category    ComponentCategory
   component_type        ComponentType
-  calculation_type      CalculationType            @default(FIXED)
+  calculation_type      CalculationType            @default(fixed)
   calculation_basis     String?                    @db.VarChar(50)
   calculation_formula   String?                    @db.Text
   calculation_frequency CalculationFrequency?      @default(monthly)

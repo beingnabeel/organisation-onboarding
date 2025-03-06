@@ -7,7 +7,10 @@ const {
 } = require("../utils/prismaIdGenerator");
 const os = require("os");
 const { performance } = require("perf_hooks");
+const fsPromises = require("fs").promises;
 const fs = require("fs");
+const mqService = require("./mqService");
+const validationService = require("./validationService");
 
 class ETLService {
   constructor() {
@@ -511,7 +514,7 @@ class ETLService {
       const jsonString = JSON.stringify(data, null, 2);
 
       // Write to the specified file path
-      fs.writeFileSync(filePath, jsonString);
+      await fsPromises.writeFile(filePath, jsonString);
 
       logger.info({
         message: "Successfully wrote data to file",
@@ -546,7 +549,10 @@ class ETLService {
       // Load data from etlextract.json if not provided
       if (!data) {
         try {
-          const extractData = fs.readFileSync("etlextract.json", "utf8");
+          const extractData = await fsPromises.readFile(
+            "etlextract.json",
+            "utf8"
+          );
           data = JSON.parse(extractData);
         } catch (err) {
           throw new AppError("Failed to read etlextract.json", 500);
@@ -781,7 +787,7 @@ class ETLService {
 
           const organizationLocationObj = {
             location_id: locationId,
-            organization_id: orgId,
+            organizationId: orgId,
             location_name: locationDataMap.location_name || "",
             location_code: locationDataMap.location_code || "",
             is_head_office:
@@ -1191,9 +1197,15 @@ class ETLService {
 
             // Handle boolean conversion
             let physicallyChalleneged = null;
-            if (personalDataMap.physically_challenged === "Yes") {
+            if (
+              personalDataMap.physically_challenged === "true" ||
+              personalDataMap.physically_challenged === true
+            ) {
               physicallyChalleneged = true;
-            } else if (personalDataMap.physically_challenged === "No") {
+            } else if (
+              personalDataMap.physically_challenged === "false" ||
+              personalDataMap.physically_challenged === false
+            ) {
               physicallyChalleneged = false;
             }
 
@@ -1254,49 +1266,6 @@ class ETLService {
             employeeIdsByNumber[obj.employee_number] = obj.employee_id;
           }
         }
-
-        // // First, collect all unique banks to avoid duplicate bank records
-        // const uniqueBanks = new Map();
-        // for (
-        //   let rowIndex = 2;
-        //   rowIndex < data.Emp_financial_details.length;
-        //   rowIndex++
-        // ) {
-        //   const financialData = data.Emp_financial_details[rowIndex];
-
-        //   // Create a map of header to value for easier access
-        //   const financialDataMap = {};
-        //   headers.forEach((header, index) => {
-        //     if (header) {
-        //       financialDataMap[header] = financialData[index];
-        //     }
-        //   });
-
-        //   if (financialDataMap.bank_type && financialDataMap.bank_code) {
-        //     const bankId = generateDeterministicUUID(
-        //       financialDataMap.bank_type || "",
-        //       financialDataMap.bank_code || ""
-        //     );
-
-        //     if (!uniqueBanks.has(bankId)) {
-        //       uniqueBanks.set(bankId, {
-        //         id: bankId,
-        //         type: financialDataMap.bank_type,
-        //         name: financialDataMap.bank_name,
-        //         code: financialDataMap.bank_code,
-        //         swift: financialDataMap.swift_code,
-        //       });
-        //     }
-        //   }
-        // }
-
-        // // Add bank information if not already in createdEntities
-        // uniqueBanks.forEach((bank) => {
-        //   if (!createdEntities.banks[bank.id]) {
-        //     createdEntities.banks[bank.id] = true;
-        //     // We could add bank objects to transformedData here if needed
-        //   }
-        // });
 
         // MODIFIED CODE FOR ADDING THE BANK OBJECT(BANK MASTER)
         // First, collect all unique banks to avoid duplicate bank records
@@ -1421,11 +1390,11 @@ class ETLService {
                 bank_id: bankId,
                 account_number: formattedAccountNumber,
                 account_type: financialDataMap.account_type || null,
-                ifsc: financialDataMap.ifsc_code || null,
+                ifsc_code: financialDataMap.ifsc_code || null,
                 branch_name: financialDataMap.branch_name || null,
                 name_on_account: financialDataMap.name_on_account || null,
                 is_primary: true, // Setting as primary by default
-                status: true, // Setting as active by default
+                status: "active", // Setting as active by default
                 created_at: currentDateTime,
                 updated_at: currentDateTime,
               };
@@ -1451,37 +1420,37 @@ class ETLService {
 
                 // Convert boolean fields
                 const pfDetailsAvailable =
-                  financialDataMap.pf_details_available === "Yes"
+                  financialDataMap.pf_details_available === "true"
                     ? true
-                    : financialDataMap.pf_details_available === "No"
+                    : financialDataMap.pf_details_available === "false"
                       ? false
                       : null;
 
                 const esiDetailsAvailable =
-                  financialDataMap.esi_details_available === "Yes"
+                  financialDataMap.esi_details_available === "true"
                     ? true
-                    : financialDataMap.esi_details_available === "No"
+                    : financialDataMap.esi_details_available === "false"
                       ? false
                       : null;
 
                 const esiEligible =
-                  financialDataMap.esi_eligible === "Yes"
+                  financialDataMap.esi_eligible === "true"
                     ? true
-                    : financialDataMap.esi_eligible === "No"
+                    : financialDataMap.esi_eligible === "false"
                       ? false
                       : null;
 
                 const lwfEligible =
-                  financialDataMap.lwf_eligible === "Yes"
+                  financialDataMap.lwf_eligible === "true"
                     ? true
-                    : financialDataMap.lwf_eligible === "No"
+                    : financialDataMap.lwf_eligible === "false"
                       ? false
                       : null;
 
                 const panAvailable =
-                  financialDataMap.pan_available === "Yes"
+                  financialDataMap.pan_available === "true"
                     ? true
-                    : financialDataMap.pan_available === "No"
+                    : financialDataMap.pan_available === "false"
                       ? false
                       : null;
 
@@ -1500,10 +1469,15 @@ class ETLService {
                   uan: financialDataMap.uan || null,
                   esi_details_available: esiDetailsAvailable,
                   esi_eligible: esiEligible,
-                  employer_esi_number:
-                    financialDataMap.employer_esi_number || null,
+                  // employer_esi_number:
+                  //   financialDataMap.employer_esi_number || null,
+                  employer_esi_number: financialDataMap.employer_esi_number
+                    ? String(financialDataMap.employer_esi_number) // ✅ Convert to string
+                    : null,
                   lwf_eligible: lwfEligible,
-                  aadhar_number: financialDataMap.aadhar_number || null,
+                  aadhar_number: financialDataMap.aadhar_number
+                    ? String(financialDataMap.aadhar_number)
+                    : null,
                   dob_in_aadhar: financialDataMap.dob_in_aadhar || null,
                   full_name_in_aadhar:
                     financialDataMap.full_name_in_aadhar || null,
@@ -1579,39 +1553,39 @@ class ETLService {
 
             // Convert boolean fields
             const isTaxable =
-              componentDataMap.is_taxable === "TRUE"
+              componentDataMap.is_taxable === "true"
                 ? true
-                : componentDataMap.is_taxable === "FALSE"
+                : componentDataMap.is_taxable === "false"
                   ? false
-                  : null;
+                  : false;
 
             const considerForCtc =
-              componentDataMap.consider_for_ctc === "TRUE"
+              componentDataMap.consider_for_ctc === "true"
                 ? true
-                : componentDataMap.consider_for_ctc === "FALSE"
+                : componentDataMap.consider_for_ctc === "false"
                   ? false
-                  : null;
+                  : true;
 
             const considerForEsi =
-              componentDataMap.consider_for_esi === "TRUE"
+              componentDataMap.consider_for_esi === "true"
                 ? true
-                : componentDataMap.consider_for_esi === "FALSE"
+                : componentDataMap.consider_for_esi === "false"
                   ? false
-                  : null;
+                  : false;
 
             const considerForPf =
-              componentDataMap.consider_for_pf === "TRUE"
+              componentDataMap.consider_for_pf === "true"
                 ? true
-                : componentDataMap.consider_for_pf === "FALSE"
+                : componentDataMap.consider_for_pf === "false"
                   ? false
-                  : null;
+                  : false;
 
             const considerForBonus =
-              componentDataMap.consider_for_bonus === "TRUE"
+              componentDataMap.consider_for_bonus === "true"
                 ? true
-                : componentDataMap.consider_for_bonus === "FALSE"
+                : componentDataMap.consider_for_bonus === "false"
                   ? false
-                  : null;
+                  : false;
 
             // Handle min_value and max_value (converting "null" strings to actual null values)
             let minValue = componentDataMap.min_value;
@@ -1841,6 +1815,18 @@ class ETLService {
 
             let defaultValue = componentDataMap.default_value;
             if (defaultValue === "null") defaultValue = null;
+            let is_mandatory = null;
+            if (
+              componentDataMap.is_mandatory === "true" ||
+              componentDataMap.is_mandatory === true
+            ) {
+              is_mandatory = true;
+            } else if (
+              componentDataMap.is_mandatory === "false" ||
+              componentDataMap.is_mandatory === false
+            ) {
+              is_mandatory = false;
+            }
 
             // Create salary structure component object
             const salaryStructureComponentObj = {
@@ -1853,7 +1839,7 @@ class ETLService {
               min_value: minValue,
               max_value: maxValue,
               default_value: defaultValue,
-              is_mandatory: null, // Not provided in the source data
+              is_mandatory: true, // Not provided in the source data
               status: "active", // Default status
               created_at: currentDateTime,
               updated_at: currentDateTime,
@@ -1918,7 +1904,7 @@ class ETLService {
             if (effectiveTo === "null") effectiveTo = null;
 
             // Handle numeric fields
-            let annualCtc = salaryDataMap.annual_ctc;
+            let annualCtc = salaryDataMap.annual_ctl;
             if (annualCtc === "null") annualCtc = null;
 
             let monthlyCtc = salaryDataMap.monthly_ctc;
@@ -1945,7 +1931,7 @@ class ETLService {
               effective_to: effectiveTo,
               annual_ctc: annualCtc,
               monthly_ctc: monthlyCtc,
-              basic_percentage: basicPercentage,
+              basic_percent: basicPercentage,
               hra_percent: hraPercentage,
               revision_type: revisionType,
               revision_reason: revisionReason,
@@ -2024,12 +2010,12 @@ class ETLService {
             let considerPreviousMonth = cycleDataMap.consider_previous_month;
             if (
               considerPreviousMonth === "TRUE" ||
-              considerPreviousMonth === "true"
+              considerPreviousMonth === true
             ) {
               considerPreviousMonth = true;
             } else if (
               considerPreviousMonth === "FALSE" ||
-              considerPreviousMonth === "false"
+              considerPreviousMonth === false
             ) {
               considerPreviousMonth = false;
             } else {
@@ -2045,8 +2031,8 @@ class ETLService {
               end_day: endDay,
               processing_day: processingDay,
               payment_day: paymentDay,
-              consider_previous_month: considerPreviousMonth,
-              is_default: true, // Setting default to true since it's the first entry
+              consider_previous_month: considerPreviousMonth || false,
+              is_default: false, // Setting default to true since it's the first entry
               status: "active", // Default status
               created_at: currentDateTime,
               updated_at: currentDateTime,
@@ -2143,14 +2129,30 @@ class ETLService {
 
             // Convert boolean fields
             let locked = runDataMap.locked;
-            if (locked === "TRUE" || locked === "true") {
+            if (locked === "TRUE" || locked === true) {
               locked = true;
-            } else if (locked === "FALSE" || locked === "false") {
+            } else if (locked === "FALSE" || locked === false) {
               locked = false;
             } else {
               locked = null;
             }
+            // Function to convert "DD-MM-YYYY" to ISO 8601 format
+            const convertToISOString = (dateStr) => {
+              if (!dateStr) return null; // Handle null values
 
+              // Match "DD-MM-YYYY" format
+              const regex = /^(\d{2})-(\d{2})-(\d{4})$/;
+              const match = dateStr.match(regex);
+
+              if (!match) return null; // Invalid format
+
+              const [_, day, month, year] = match; // Extract day, month, year
+              const formattedDate = new Date(
+                `${year}-${month}-${day}T00:00:00.000Z`
+              ); // Convert to ISO format
+
+              return isNaN(formattedDate) ? null : formattedDate.toISOString();
+            };
             // Create payroll run object
             const payrollRunObj = {
               run_id: runId,
@@ -2238,12 +2240,12 @@ class ETLService {
 
             // Convert boolean fields
             let isMandatory = moduleDataMap.is_mandatory;
-            if (isMandatory === "TRUE" || isMandatory === "true") {
+            if (isMandatory === "TRUE" || isMandatory === true) {
               isMandatory = true;
-            } else if (isMandatory === "FALSE" || isMandatory === "false") {
+            } else if (isMandatory === "FALSE" || isMandatory === false) {
               isMandatory = false;
             } else {
-              isMandatory = null;
+              isMandatory = false;
             }
 
             // Create policy module object
@@ -2254,7 +2256,7 @@ class ETLService {
               module_code: moduleDataMap.module_code || "",
               module_category: moduleDataMap.module_category || "",
               module_description: moduleDataMap.module_description || "",
-              version: moduleDataMap.version || null,
+              version: moduleDataMap.version || "1.0.0",
               is_mandatory: isMandatory,
               status: moduleDataMap.status || "active", // Default status if missing
               effective_from: moduleDataMap.effective_from || null,
@@ -2275,6 +2277,115 @@ class ETLService {
           }
         }
       }
+
+      // // Process policy_setting sheet if it exists
+      // if (data.policy_setting && data.policy_setting.length >= 3) {
+      //   // Headers are in the second row (index 1)
+      //   const headers = data.policy_setting[1];
+
+      //   // Track created policy settings to avoid duplicates
+      //   const createdPolicySettings = {};
+
+      //   // Process each policy setting row starting from index 2 (skipping header rows)
+      //   for (
+      //     let rowIndex = 2;
+      //     rowIndex < data.policy_setting.length;
+      //     rowIndex++
+      //   ) {
+      //     const settingData = data.policy_setting[rowIndex];
+
+      //     // Create a map of header to value for easier access
+      //     const settingDataMap = {};
+      //     headers.forEach((header, index) => {
+      //       if (header) {
+      //         settingDataMap[header] = settingData[index];
+      //       }
+      //     });
+
+      //     // Skip if required fields are missing
+      //     if (!settingDataMap.setting_name || !settingDataMap.setting_key)
+      //       continue;
+
+      //     // Generate unique IDs
+      //     const settingId = generateDeterministicUUID(
+      //       settingDataMap.setting_name || "",
+      //       settingDataMap.setting_key || ""
+      //     );
+
+      //     const moduleId = generateDeterministicUUID(
+      //       settingDataMap.module_code || "",
+      //       settingDataMap.module_category || ""
+      //     );
+
+      //     const orgId = generateDeterministicUUID(
+      //       settingDataMap.auth_signatory_designation || "",
+      //       settingDataMap.cin || ""
+      //     );
+
+      //     const createdById = generateDeterministicUUID(
+      //       settingDataMap.created_by_emp_number || "",
+      //       settingDataMap.created_by_emp_first_name || ""
+      //     );
+
+      //     const updatedById = generateDeterministicUUID(
+      //       settingDataMap.updated_by_emp_number || "",
+      //       settingDataMap.updated_by_emp_first_name || ""
+      //     );
+
+      //     // Check if this policy setting has been processed already
+      //     if (!createdPolicySettings[settingId]) {
+      //       createdPolicySettings[settingId] = true;
+
+      //       // Convert boolean fields
+      //       let isEncrypted = settingDataMap.is_encrypted;
+      //       if (isEncrypted === "TRUE" || isEncrypted === true) {
+      //         isEncrypted = true;
+      //       } else if (isEncrypted === "FALSE" || isEncrypted === false) {
+      //         isEncrypted = false;
+      //       } else {
+      //         isEncrypted = false;
+      //       }
+
+      //       let isConfigurable = settingDataMap.is_configurable;
+      //       if (isConfigurable === "TRUE" || isConfigurable === true) {
+      //         isConfigurable = true;
+      //       } else if (isConfigurable === "FALSE" || isConfigurable === false) {
+      //         isConfigurable = false;
+      //       } else {
+      //         isConfigurable = true;
+      //       }
+
+      //       // Create policy setting object
+      //       const policySettingObj = {
+      //         setting_id: settingId,
+      //         module_id: moduleId,
+      //         org_id: orgId,
+      //         setting_name: settingDataMap.setting_name || "",
+      //         setting_key: settingDataMap.setting_key || "",
+      //         setting_value: settingDataMap.setting_value || null,
+      //         setting_type: settingDataMap.setting_type || "",
+      //         is_encrypted: isEncrypted,
+      //         is_configurable: isConfigurable,
+      //         validation_rules: settingDataMap.validation_rules || null,
+      //         default_value: settingDataMap.default_value || null,
+      //         description: settingDataMap.description || "",
+      //         status: settingDataMap.status || "active", // Default status if missing
+      //         created_by: createdById,
+      //         updated_by: updatedById,
+      //         created_at: currentDateTime,
+      //         updated_at: currentDateTime,
+      //       };
+
+      //       // Debug log to verify the object has all required fields
+      //       console.log(
+      //         "Policy Setting Object:",
+      //         JSON.stringify(policySettingObj, null, 2)
+      //       );
+
+      //       transformedData.push(policySettingObj);
+      //     }
+      //   }
+      // }
 
       // Process policy_setting sheet if it exists
       if (data.policy_setting && data.policy_setting.length >= 3) {
@@ -2336,24 +2447,107 @@ class ETLService {
 
             // Convert boolean fields
             let isEncrypted = settingDataMap.is_encrypted;
-            if (isEncrypted === "TRUE" || isEncrypted === "true") {
+            if (isEncrypted === "TRUE" || isEncrypted === true) {
               isEncrypted = true;
-            } else if (isEncrypted === "FALSE" || isEncrypted === "false") {
+            } else if (isEncrypted === "FALSE" || isEncrypted === false) {
               isEncrypted = false;
             } else {
-              isEncrypted = null;
+              isEncrypted = false;
             }
 
             let isConfigurable = settingDataMap.is_configurable;
-            if (isConfigurable === "TRUE" || isConfigurable === "true") {
+            if (isConfigurable === "TRUE" || isConfigurable === true) {
               isConfigurable = true;
-            } else if (
-              isConfigurable === "FALSE" ||
-              isConfigurable === "false"
-            ) {
+            } else if (isConfigurable === "FALSE" || isConfigurable === false) {
               isConfigurable = false;
             } else {
-              isConfigurable = null;
+              isConfigurable = true;
+            }
+
+            // Parse JSON fields
+            let settingValue = null;
+            let validationRules = null;
+            let defaultValue = null;
+
+            // Process setting_value
+            if (settingDataMap.setting_value) {
+              try {
+                // First try to parse as JSON directly
+                settingValue = JSON.parse(settingDataMap.setting_value);
+              } catch (e) {
+                // If that fails, try to convert JS object notation to valid JSON
+                try {
+                  // Replace single quotes with double quotes
+                  let jsonStr = settingDataMap.setting_value.replace(/'/g, '"');
+                  // Add double quotes to keys without quotes
+                  jsonStr = jsonStr.replace(
+                    /(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
+                    '$1"$3":'
+                  );
+                  // Remove trailing spaces inside the object
+                  jsonStr = jsonStr.replace(/}\s+$/, "}");
+                  settingValue = JSON.parse(jsonStr);
+                } catch (e2) {
+                  console.error(
+                    `Failed to parse setting_value: ${settingDataMap.setting_value}`
+                  );
+                  // Fallback to a default valid JSON object
+                  settingValue = { value: null };
+                }
+              }
+            }
+
+            // Process validation_rules
+            if (settingDataMap.validation_rules) {
+              try {
+                validationRules = JSON.parse(settingDataMap.validation_rules);
+              } catch (e) {
+                try {
+                  // Replace single quotes with double quotes
+                  let jsonStr = settingDataMap.validation_rules.replace(
+                    /'/g,
+                    '"'
+                  );
+                  // Add double quotes to keys without quotes
+                  jsonStr = jsonStr.replace(
+                    /(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
+                    '$1"$3":'
+                  );
+                  // Remove trailing spaces inside the object
+                  jsonStr = jsonStr.replace(/}\s+$/, "}");
+                  validationRules = JSON.parse(jsonStr);
+                } catch (e2) {
+                  console.error(
+                    `Failed to parse validation_rules: ${settingDataMap.validation_rules}`
+                  );
+                  validationRules = null;
+                }
+              }
+            }
+
+            // Process default_value
+            if (settingDataMap.default_value) {
+              try {
+                defaultValue = JSON.parse(settingDataMap.default_value);
+              } catch (e) {
+                try {
+                  // Replace single quotes with double quotes
+                  let jsonStr = settingDataMap.default_value.replace(/'/g, '"');
+                  // Add double quotes to keys without quotes
+                  jsonStr = jsonStr.replace(
+                    /(\s*?{\s*?|\s*?,\s*?)(['"])?([a-zA-Z0-9_]+)(['"])?:/g,
+                    '$1"$3":'
+                  );
+                  // Remove trailing spaces inside the object
+                  jsonStr = jsonStr.replace(/}\s+$/, "}");
+                  defaultValue = JSON.parse(jsonStr);
+                } catch (e2) {
+                  console.error(
+                    `Failed to parse default_value: ${settingDataMap.default_value}`
+                  );
+                  defaultValue = null;
+                }
+              }
             }
 
             // Create policy setting object
@@ -2363,12 +2557,12 @@ class ETLService {
               org_id: orgId,
               setting_name: settingDataMap.setting_name || "",
               setting_key: settingDataMap.setting_key || "",
-              setting_value: settingDataMap.setting_value || null,
-              setting_type: settingDataMap.setting_type || "",
+              setting_value: settingValue, // Now a proper JSON object
+              setting_type: settingDataMap.setting_type?.toLowerCase() || "",
               is_encrypted: isEncrypted,
               is_configurable: isConfigurable,
-              validation_rules: settingDataMap.validation_rules || null,
-              default_value: settingDataMap.default_value || null,
+              validation_rules: validationRules, // Now a proper JSON object
+              default_value: defaultValue, // Now a proper JSON object
               description: settingDataMap.description || "",
               status: settingDataMap.status || "active", // Default status if missing
               created_by: createdById,
@@ -2461,36 +2655,33 @@ class ETLService {
 
             // Convert boolean fields
             let extensionAllowed = policyDataMap.extension_allowed;
-            if (extensionAllowed === "TRUE" || extensionAllowed === "true") {
+            if (extensionAllowed === "TRUE" || extensionAllowed === true) {
               extensionAllowed = true;
             } else if (
               extensionAllowed === "FALSE" ||
-              extensionAllowed === "false"
+              extensionAllowed === false
             ) {
               extensionAllowed = false;
             } else {
-              extensionAllowed = null;
+              extensionAllowed = true;
             }
 
             let autoConfirm = policyDataMap.auto_confirm;
-            if (autoConfirm === "TRUE" || autoConfirm === "true") {
+            if (autoConfirm === "TRUE" || autoConfirm === true) {
               autoConfirm = true;
-            } else if (autoConfirm === "FALSE" || autoConfirm === "false") {
+            } else if (autoConfirm === "FALSE" || autoConfirm === false) {
               autoConfirm = false;
             } else {
-              autoConfirm = null;
+              autoConfirm = false;
             }
 
             let reviewRequired = policyDataMap.review_required;
-            if (reviewRequired === "TRUE" || reviewRequired === "true") {
+            if (reviewRequired === "TRUE" || reviewRequired === true) {
               reviewRequired = true;
-            } else if (
-              reviewRequired === "FALSE" ||
-              reviewRequired === "false"
-            ) {
+            } else if (reviewRequired === "FALSE" || reviewRequired === false) {
               reviewRequired = false;
             } else {
-              reviewRequired = null;
+              reviewRequired = true;
             }
 
             // Convert numeric fields
@@ -2688,11 +2879,12 @@ class ETLService {
 
             // Create policy acknowledgement object
             const policyAcknowledgementObj = {
-              acknowledgement_id: acknowledgementId,
+              acknowledgment_id: acknowledgementId,
               version_id: versionId,
               employee_id: employeeId,
-              acknowledged_at: acknowledgementDataMap.acknowledged_at || null,
-              acknowledgement_type:
+              acknowledged_at:
+                acknowledgementDataMap.acknowledged_at || currentDateTime,
+              acknowledgment_type:
                 acknowledgementDataMap.acknowledgement_type || "",
               ip_address: acknowledgementDataMap.ip_address || "",
               user_agent: acknowledgementDataMap.user_agent || "",
@@ -2774,45 +2966,45 @@ class ETLService {
 
             // Convert boolean fields
             let isEncashable = configDataMap.is_encashable;
-            if (isEncashable === "TRUE" || isEncashable === "true") {
+            if (isEncashable === "TRUE" || isEncashable === true) {
               isEncashable = true;
-            } else if (isEncashable === "FALSE" || isEncashable === "false") {
+            } else if (isEncashable === "FALSE" || isEncashable === false) {
               isEncashable = false;
             } else {
-              isEncashable = null;
+              isEncashable = false;
             }
 
             let requiresApproval = configDataMap.requires_approval;
-            if (requiresApproval === "TRUE" || requiresApproval === "true") {
+            if (requiresApproval === "TRUE" || requiresApproval === true) {
               requiresApproval = true;
             } else if (
               requiresApproval === "FALSE" ||
-              requiresApproval === "false"
+              requiresApproval === false
             ) {
               requiresApproval = false;
             } else {
-              requiresApproval = null;
+              requiresApproval = true;
             }
 
             let requiresDocuments = configDataMap.requires_documents;
-            if (requiresDocuments === "TRUE" || requiresDocuments === "true") {
+            if (requiresDocuments === "TRUE" || requiresDocuments === true) {
               requiresDocuments = true;
             } else if (
               requiresDocuments === "FALSE" ||
-              requiresDocuments === "false"
+              requiresDocuments === false
             ) {
               requiresDocuments = false;
             } else {
-              requiresDocuments = null;
+              requiresDocuments = false;
             }
 
             let prorataBasis = configDataMap.prorata_basis;
-            if (prorataBasis === "TRUE" || prorataBasis === "true") {
+            if (prorataBasis === "TRUE" || prorataBasis === true) {
               prorataBasis = true;
-            } else if (prorataBasis === "FALSE" || prorataBasis === "false") {
+            } else if (prorataBasis === "FALSE" || prorataBasis === false) {
               prorataBasis = false;
             } else {
-              prorataBasis = null;
+              prorataBasis = true;
             }
 
             // Convert numeric fields
@@ -2828,11 +3020,11 @@ class ETLService {
             const carryForwardValidityMonths =
               parseInt(configDataMap.carry_forward_validity_months) || null;
             const encashmentLimit =
-              parseInt(configDataMap.encashment_limit) || null;
+              parseInt(configDataMap.encashment_limit) || 0;
             const documentSubmissionDays =
-              parseInt(configDataMap.document_submission_days) || null;
+              parseInt(configDataMap.document_submission_days) || 0;
             const applicableFromMonths =
-              parseInt(configDataMap.applicable_from_months) || null;
+              parseInt(configDataMap.applicable_from_months) || 0;
 
             // Create leave policy configuration object
             const leavePolicyConfigObj = {
@@ -2840,7 +3032,7 @@ class ETLService {
               module_id: moduleId,
               org_id: orgId,
               leave_type: configDataMap.leave_type || "",
-              accural_frequency: configDataMap.accural_frequency || "",
+              accrual_frequency: configDataMap.accural_frequency || "",
               days_per_year: daysPerYear,
               min_days_per_request: minDaysPerRequest,
               max_days_per_request: maxDaysPerRequest,
@@ -2994,12 +3186,12 @@ class ETLService {
 
             // Convert boolean fields
             let isHalfDay = holidayDataMap.is_half_day;
-            if (isHalfDay === "TRUE" || isHalfDay === "true") {
+            if (isHalfDay === "TRUE" || isHalfDay === true) {
               isHalfDay = true;
-            } else if (isHalfDay === "FALSE" || isHalfDay === "false") {
+            } else if (isHalfDay === "FALSE" || isHalfDay === false) {
               isHalfDay = false;
             } else {
-              isHalfDay = null;
+              isHalfDay = false;
             }
 
             // Handle half day type
@@ -3099,62 +3291,62 @@ class ETLService {
 
             // Convert boolean fields
             let geoFencingEnabled = attendanceDataMap.geo_fencing_enabled;
-            if (geoFencingEnabled === "TRUE" || geoFencingEnabled === "true") {
+            if (geoFencingEnabled === "TRUE" || geoFencingEnabled === true) {
               geoFencingEnabled = true;
             } else if (
               geoFencingEnabled === "FALSE" ||
-              geoFencingEnabled === "false"
+              geoFencingEnabled === false
             ) {
               geoFencingEnabled = false;
             } else {
-              geoFencingEnabled = null;
+              geoFencingEnabled = false;
             }
 
             let overtimePolicyEnabled =
               attendanceDataMap.overtime_policy_enabled;
             if (
               overtimePolicyEnabled === "TRUE" ||
-              overtimePolicyEnabled === "true"
+              overtimePolicyEnabled === true
             ) {
               overtimePolicyEnabled = true;
             } else if (
               overtimePolicyEnabled === "FALSE" ||
-              overtimePolicyEnabled === "false"
+              overtimePolicyEnabled === false
             ) {
               overtimePolicyEnabled = false;
             } else {
-              overtimePolicyEnabled = null;
+              overtimePolicyEnabled = false;
             }
 
             let autoCheckoutEnabled = attendanceDataMap.auto_checkout_enabled;
             if (
               autoCheckoutEnabled === "TRUE" ||
-              autoCheckoutEnabled === "true"
+              autoCheckoutEnabled === true
             ) {
               autoCheckoutEnabled = true;
             } else if (
               autoCheckoutEnabled === "FALSE" ||
-              autoCheckoutEnabled === "false"
+              autoCheckoutEnabled === false
             ) {
               autoCheckoutEnabled = false;
             } else {
-              autoCheckoutEnabled = null;
+              autoCheckoutEnabled = false;
             }
 
             let regularizationAllowed =
               attendanceDataMap.regularization_allowed;
             if (
               regularizationAllowed === "TRUE" ||
-              regularizationAllowed === "true"
+              regularizationAllowed === true
             ) {
               regularizationAllowed = true;
             } else if (
               regularizationAllowed === "FALSE" ||
-              regularizationAllowed === "false"
+              regularizationAllowed === false
             ) {
               regularizationAllowed = false;
             } else {
-              regularizationAllowed = null;
+              regularizationAllowed = true;
             }
 
             // Convert numeric fields
@@ -3188,37 +3380,48 @@ class ETLService {
             // Create attendance setting object
             const attendanceSettingObj = {
               id: id,
-              org_id: orgId,
-              module_id: moduleId,
-              capture_method: attendanceDataMap.capture_method || "",
-              geo_fencing_enabled: geoFencingEnabled,
-              geo_fence_radius: geoFenceRadius,
-              shift_type: attendanceDataMap.shift_type || "",
-              shift_start_time: attendanceDataMap.shift_start_time || null,
-              shift_end_time: attendanceDataMap.shift_end_time || null,
-              flexible_hourse: flexibleHours,
+              organizationId: orgId,
+              moduleId: moduleId,
+              // captureMethods: attendanceDataMap.capture_method || "",
+              captureMethods: attendanceDataMap.capture_method
+                ? JSON.parse(
+                    attendanceDataMap.capture_method.replace(/'/g, '"')
+                  )
+                : [],
+              geoFencingEnabled: geoFencingEnabled,
+              geoFenceRadius: geoFenceRadius,
+              shiftType: attendanceDataMap.shift_type || "",
+              shift_start_time: attendanceDataMap.shift_start_time
+                ? attendanceDataMap.shift_start_time.replace("t", "T")
+                : null,
+
+              shift_end_time: attendanceDataMap.shift_end_time
+                ? attendanceDataMap.shift_end_time.replace("t", "T")
+                : null,
+
+              flexibleHours: flexibleHours,
               grace_period_minutes: gracePeriodMinutes,
-              half_day_hours: halfDayHours,
-              full_day_hours: fullDayHours,
-              break_duration_minutes: breakDurationMinutes,
-              work_days_per_week: workDaysPerWeek,
-              overtime_policy_enabled: overtimePolicyEnabled,
-              minimum_overtime_minutes: minimumOvertimeMinutes,
+              halfDayHours: halfDayHours,
+              fullDayHours: fullDayHours,
+              breakDurationMinutes: breakDurationMinutes,
+              workDaysPerWeek: workDaysPerWeek,
+              overtimePolicyEnabled: overtimePolicyEnabled,
+              minimumOvertimeMinutes: minimumOvertimeMinutes,
               overtime_calculation_type:
                 attendanceDataMap.overtime_calculation_type || null,
-              max_overtime_hours_monthly: maxOvertimeHoursMonthly,
-              late_penalty_type: attendanceDataMap.late_penalty_type || "",
+              maxOvertimeHoursMonthly: maxOvertimeHoursMonthly,
+              latePenaltyType: attendanceDataMap.late_penalty_type || "",
               late_penalty_leave_type:
                 attendanceDataMap.late_penalty_leave_type || null,
               missing_swipe_policy:
                 attendanceDataMap.missing_swipte_policy || "", // Note: there's a typo in the field name
-              auto_checkout_enabled: autoCheckoutEnabled,
+              autoCheckoutEnabled: autoCheckoutEnabled,
               auto_checkout_time: attendanceDataMap.auto_checkout_time || null,
-              regularization_allowed: regularizationAllowed,
+              regularizationAllowed: regularizationAllowed,
               regularization_window_days: regularizationWindowDays,
               regularization_limit_monthly: regularizationLimitMonthly,
-              weekend_overtime_multiplier: weekendOvertimeMultiplier,
-              holiday_overtime_multiplier: holidayOvertimeMultiplier,
+              weekendOvertimeMultiplier: weekendOvertimeMultiplier,
+              holidayOvertimeMultiplier: holidayOvertimeMultiplier,
               created_by: createdById,
               updated_by: updatedById,
               created_at: currentDateTime,
@@ -3289,7 +3492,7 @@ class ETLService {
             createdShiftConfigurations[shiftId] = true;
 
             // Convert numeric fields
-            const flexibleHours = parseInt(shiftDataMap.flexible_hours) || null;
+            const flexibleHours = parseInt(shiftDataMap.flexible_hours) || 0;
             const breakDuration = parseInt(shiftDataMap.break_duration) || null;
             const gracePeriodMinutes =
               parseInt(shiftDataMap.grace_period_minutes) || null;
@@ -3304,8 +3507,12 @@ class ETLService {
               org_id: orgId,
               shift_name: shiftDataMap.shift_name || "",
               shift_type: shiftDataMap.shift_type || "",
-              start_time: shiftDataMap.start_time || null,
-              end_time: shiftDataMap.end_time || null,
+              start_time: shiftDataMap.start_time
+                ? shiftDataMap.start_time.replace("t", "T")
+                : null,
+              end_time: shiftDataMap.end_time
+                ? shiftDataMap.end_time.replace("t", "T")
+                : null,
               flexible_hours: flexibleHours,
               break_duration: breakDuration,
               grace_period_minutes: gracePeriodMinutes,
@@ -3457,18 +3664,128 @@ class ETLService {
    * @param {Object} data - Transformed data from all sheets
    * @returns {Promise<Object>} - Loaded data
    */
-  async loadData(data) {
+  // async loadData(data) {
+  //   try {
+  //     // For now, we'll just log the data
+  //     logger.info({
+  //       message: "Ready to load data to database",
+  //       metadata: {
+  //         sheets: Object.keys(data),
+  //         totalSheets: Object.keys(data).length,
+  //       },
+  //     });
+
+  //     return data;
+  //   } catch (error) {
+  //     logger.error({
+  //       message: "Error loading data",
+  //       metadata: {
+  //         error: {
+  //           message: error.message,
+  //           stack: error.stack,
+  //         },
+  //       },
+  //     });
+  //     throw new AppError("Failed to load data", 500);
+  //   }
+  // }
+
+  // MODIFIED LOAD DATA FUNCTION
+  /**
+   * Load the transformed data into the database
+   * @param {Object} data - Transformed data from all sheets
+   * @returns {Promise<Object>} - Loaded data
+   */
+  async loadData() {
     try {
-      // For now, we'll just log the data
+      // Read from etltransform.json using path module for consistent file resolution
+      const path = require("path");
+      const fs = require("fs").promises;
+      const filePath = path.join(__dirname, "../../etltransform.json");
+      const data = JSON.parse(await fs.readFile(filePath, "utf8"));
+
       logger.info({
-        message: "Ready to load data to database",
+        message: "Starting ETL load process",
         metadata: {
-          sheets: Object.keys(data),
-          totalSheets: Object.keys(data).length,
+          objectCount: data.length,
+          timestamp: new Date().toISOString(),
         },
       });
 
-      return data;
+      // Track statistics
+      const stats = {
+        total: data.length,
+        passed: 0,
+        failed: 0,
+        objectTypes: {},
+      };
+
+      // Process each object in the data array
+      for (const obj of data) {
+        // Determine object type for logging
+        const objectType = validationService.determineObjectType(obj);
+
+        // Initialize counter for this object type if needed
+        if (!stats.objectTypes[objectType]) {
+          stats.objectTypes[objectType] = { total: 0, passed: 0, failed: 0 };
+        }
+        stats.objectTypes[objectType].total++;
+
+        // Validate the object
+        const validation = validationService.validate(obj);
+
+        if (validation.isValid) {
+          // Object passed validation, send to passed_data queue
+          await mqService.publishToPassed(obj);
+          stats.passed++;
+          stats.objectTypes[objectType].passed++;
+
+          logger.debug({
+            message: `Object passed validation: ${objectType}`,
+            metadata: {
+              objectType,
+              id:
+                obj.id ||
+                obj.org_id ||
+                obj.employee_id ||
+                obj.shift_id ||
+                obj.assignment_id,
+            },
+          });
+        } else {
+          // Object failed validation, send to failed_data queue
+          await mqService.publishToFailed(obj, validation.errors);
+          stats.failed++;
+          stats.objectTypes[objectType].failed++;
+
+          logger.warn({
+            message: `Object failed validation: ${objectType}`,
+            metadata: {
+              objectType,
+              id:
+                obj.id ||
+                obj.org_id ||
+                obj.employee_id ||
+                obj.shift_id ||
+                obj.assignment_id,
+              errors: validation.errors,
+            },
+          });
+        }
+      }
+
+      logger.info({
+        message: "ETL load process completed",
+        metadata: {
+          stats,
+          timestamp: new Date().toISOString(),
+        },
+      });
+
+      // Close the MQ connection
+      await mqService.close();
+
+      return stats;
     } catch (error) {
       logger.error({
         message: "Error loading data",
