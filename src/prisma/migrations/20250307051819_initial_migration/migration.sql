@@ -5,13 +5,13 @@ CREATE TYPE "DocumentType" AS ENUM ('aadhar', 'pan', 'passport', 'driving_licens
 CREATE TYPE "AccountType" AS ENUM ('savings', 'current', 'salary');
 
 -- CreateEnum
-CREATE TYPE "CalculationType" AS ENUM ('FIXED', 'PERCENTAGE', 'FORMULA', 'HOURLY', 'DAILY', 'PER_UNIT');
+CREATE TYPE "CalculationType" AS ENUM ('fixed', 'percentage', 'formula', 'hourly', 'daily', 'per_unit');
 
 -- CreateEnum
 CREATE TYPE "EmploymentTypeEnum" AS ENUM ('permanent', 'contract', 'intern', 'consultant', 'probation');
 
 -- CreateEnum
-CREATE TYPE "SalaryPaymentMode" AS ENUM ('BANK_TRANSFER', 'CASH', 'CHEQUE', 'OTHER');
+CREATE TYPE "SalaryPaymentMode" AS ENUM ('bank_transfer', 'cash', 'cheque', 'other');
 
 -- CreateEnum
 CREATE TYPE "LeaveType" AS ENUM ('sick', 'casual', 'earned', 'maternity', 'paternity', 'unpaid', 'compensatory');
@@ -387,7 +387,7 @@ CREATE TABLE "employee_bank_details" (
     "branch_name" VARCHAR NOT NULL,
     "name_on_account" VARCHAR NOT NULL,
     "is_primary" BOOLEAN NOT NULL DEFAULT false,
-    "status" VARCHAR NOT NULL,
+    "status" "Status" NOT NULL DEFAULT 'active',
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
@@ -400,7 +400,7 @@ CREATE TABLE "employee_financial_details" (
     "employee_id" UUID NOT NULL,
     "compliance_id" UUID,
     "employee_bank_id" UUID,
-    "salary_payment_mode" "SalaryPaymentMode" DEFAULT 'BANK_TRANSFER',
+    "salary_payment_mode" "SalaryPaymentMode" DEFAULT 'bank_transfer',
     "pf_details_available" BOOLEAN,
     "pf_number" TEXT,
     "pf_joining_date" DATE,
@@ -452,7 +452,7 @@ CREATE TABLE "salary_components_master" (
     "component_code" VARCHAR(20) NOT NULL,
     "component_category" "ComponentCategory" NOT NULL,
     "component_type" "ComponentType" NOT NULL,
-    "calculation_type" "CalculationType" NOT NULL DEFAULT 'FIXED',
+    "calculation_type" "CalculationType" NOT NULL DEFAULT 'fixed',
     "calculation_basis" VARCHAR(50),
     "calculation_formula" TEXT,
     "calculation_frequency" "CalculationFrequency" DEFAULT 'monthly',

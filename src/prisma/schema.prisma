@@ -709,7 +709,7 @@ model EmployeeFinancialDetail {
   pan_available               Boolean?
   pan_number                  String?             @unique
   full_name_in_pan            String?             @db.VarChar
-  dob_in_pan                  String?             @db.VarChar
+  dob_in_pan                  DateTime?           @db.Date
   parents_name_in_pan         String?             @db.VarChar
   created_at                  DateTime            @default(now())
   updated_at                  DateTime            @default(now())

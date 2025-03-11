@@ -6,7 +6,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start:dev": "nodemon server.js",
-    "start:prod": "cross-env NODE_ENV=production nodemon server.js"
+    "start:prod": "cross-env NODE_ENV=production nodemon server.js",
+    "consumer": "node src/services/consumePassedData.js"
   },
   "author": "Nabeel Hassan",
   "license": "ISC",
@@ -15,6 +16,7 @@
     "@aws-sdk/s3-request-presigner": "^3.744.0",
     "@prisma/client": "^6.3.1",
     "amqplib": "^0.10.5",
+    "axios": "^1.8.2",
     "bcryptjs": "^2.4.3",
     "cors": "^2.8.5",
     "csv-parser": "^3.2.0",

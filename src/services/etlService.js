@@ -620,33 +620,38 @@ class ETLService {
         };
         transformedData.push(organizationObj);
 
+        const BankCode = orgDataMap.bank_code
+          ? orgDataMap.bank_code.toString()
+          : "";
         // 2. Bank Master
         const bankId = generateDeterministicUUID(
           orgDataMap.bank_type,
-          orgDataMap.bank_code
+          BankCode
         );
         const bankMasterObj = {
           bank_id: bankId,
           bank_type: orgDataMap.bank_type || "",
           bank_name: orgDataMap.bank_name || "",
-          bank_code: orgDataMap.bank_code || "",
+          bank_code: BankCode,
           swift_code: orgDataMap.swift_code || "",
           is_active: true,
           created_at: currentDateTime,
           updated_at: currentDateTime,
         };
         transformedData.push(bankMasterObj);
-
+        const AccountNumber = orgDataMap.account_number
+          ? orgDataMap.account_number.toString()
+          : "";
         // 3. Organization Bank Detail
         const orgBankId = generateDeterministicUUID(
-          orgDataMap.account_number,
+          AccountNumber,
           orgDataMap.ifsc_code
         );
         const orgBankDetailObj = {
           org_bank_id: orgBankId,
           org_id: orgId,
           bank_id: bankId,
-          account_number: orgDataMap.account_number || "",
+          account_number: AccountNumber,
           account_type: orgDataMap.account_type
             ? orgDataMap.account_type.toLowerCase()
             : "",
@@ -677,7 +682,9 @@ class ETLService {
           updated_at: currentDateTime,
         };
         transformedData.push(orgTaxDetailObj);
-
+        const pfEstablishmentId = orgDataMap.pf_establishment_id
+          ? orgDataMap.pf_establishment_id.toString()
+          : "";
         // 5. Organization Compliance Detail
         const orgComplianceId = generateDeterministicUUID(
           orgDataMap.compliance_code,
@@ -687,7 +694,7 @@ class ETLService {
           org_compliance_id: orgComplianceId,
           org_id: orgId,
           compliance_code: orgDataMap.compliance_code || "",
-          pf_establishment_id: orgDataMap.pf_establishment_id || "",
+          pf_establishment_id: pfEstablishmentId,
           pf_number: orgDataMap.pf_number || "",
           pf_registration_date: orgDataMap.pf_registration_date || null,
           esi_number: orgDataMap.esi_number || "",
@@ -727,7 +734,9 @@ class ETLService {
               locationDataMap[header] = locationData[index];
             }
           });
-
+          const dialCode = locationDataMap.dial_code
+            ? locationDataMap.dial_code.toString()
+            : "";
           // 1. Country Master
           const countryId = generateDeterministicUUID(
             locationDataMap.country_code,
@@ -742,7 +751,7 @@ class ETLService {
               country_id: countryId,
               country_code: locationDataMap.country_code || "",
               country_name: locationDataMap.country_name || "",
-              dial_code: locationDataMap.dial_code || "",
+              dial_code: dialCode,
               currency_code: locationDataMap.currency_code || "",
               is_active: true,
               created_at: currentDateTime,
@@ -773,6 +782,12 @@ class ETLService {
             transformedData.push(stateMasterObj);
           }
 
+          // const BankCode = orgDataMap.bank_code
+          // ? orgDataMap.bank_code.toString()
+          // : "";
+          const pinCodeDetail = locationDataMap.pincode
+            ? locationDataMap.pincode.toString()
+            : "";
           // 3. Organization Location
           const locationId = generateDeterministicUUID(
             locationDataMap.location_code,
@@ -801,7 +816,7 @@ class ETLService {
             city: locationDataMap.city || "",
             country_id: countryId,
             state_id: stateId,
-            pincode: locationDataMap.pincode || "",
+            pincode: pinCodeDetail,
             email: locationDataMap.email || "",
             phone: locationDataMap.phone || "",
             gstin: locationDataMap.gstin || "",
@@ -1064,11 +1079,19 @@ class ETLService {
             empDataMap.title_code,
             empDataMap.grade_level
           );
+          let mobileNumber = empDataMap.mobile_number || "";
+          mobileNumber = mobileNumber.toString();
+          let emergencyContactNumber =
+            empDataMap.emergnecy_contact_number || "";
+          emergencyContactNumber = emergencyContactNumber.toString();
 
           // Only add employee if it hasn't been added yet
           if (!createdEntities.employees[employeeId]) {
             createdEntities.employees[employeeId] = true;
-
+            // const reporting_manager_emp_number:
+            //     empDataMap.reporting_manager_employee_number || "",
+            //   reporting_manager_first_name:
+            //     empDataMap.reporting_manager_first_name || "",
             // Store reporting manager information for second pass
             const employeeObj = {
               employee_id: employeeId,
@@ -1087,12 +1110,14 @@ class ETLService {
               gender: empDataMap.gender || "",
               official_email: empDataMap.official_email || "",
               personal_email: empDataMap.personal_email || "",
-              mobile_number: empDataMap.mobile_number || "",
+              // mobile_number: empDataMap.mobile_number || "",
+              mobile_number: mobileNumber || "",
               emergency_contact_name: empDataMap.emergency_contact_name || "",
               emergency_contact_relationship:
                 empDataMap.emergency_contact_relationship || "",
-              emergency_contact_number:
-                empDataMap.emergnecy_contact_number || "", // Note the typo in the header
+              // emergency_contact_number:
+              // empDataMap.emergnecy_contact_number || "", // Note the typo in the header
+              emergency_contact_number: emergencyContactNumber || "",
               date_joined: empDataMap.date_joined || "",
               probation_end_date: empDataMap.probation_end_date || "",
               confirmation_date: empDataMap.confirmation_date || "",
@@ -1223,6 +1248,10 @@ class ETLService {
               }
             }
 
+            const residenceNumber = personalDataMap.residence_number
+              ? personalDataMap.residence_number.toString()
+              : null;
+
             const employeePersonalDetailObj = {
               empl_personal_det_id: emplPersonalDetId,
               employee_id: employeeId,
@@ -1240,7 +1269,8 @@ class ETLService {
               spouse_gender: personalDataMap.spouse_gender
                 ? personalDataMap.spouse_gender.toLowerCase()
                 : null,
-              residence_number: personalDataMap.residence_number || null,
+              // residence_number: personalDataMap.residence_number || null,
+              residence_number: residenceNumber || null,
               social_media_handles: socialMediaHandles,
               created_at: currentDateTime,
               updated_at: currentDateTime,
@@ -1284,11 +1314,13 @@ class ETLService {
               financialDataMap[header] = financialData[index];
             }
           });
-
-          if (financialDataMap.bank_type && financialDataMap.bank_code) {
+          const financialBankCode = financialDataMap.bank_code
+            ? financialDataMap.bank_code.toString()
+            : "";
+          if (financialDataMap.bank_type && financialBankCode) {
             const bankId = generateDeterministicUUID(
               financialDataMap.bank_type || "",
-              financialDataMap.bank_code || ""
+              financialBankCode
             );
 
             if (!uniqueBanks.has(bankId)) {
@@ -1296,7 +1328,7 @@ class ETLService {
                 id: bankId,
                 type: financialDataMap.bank_type,
                 name: financialDataMap.bank_name,
-                code: financialDataMap.bank_code,
+                code: financialBankCode,
                 swift: financialDataMap.swift_code,
               });
             }
@@ -1314,7 +1346,7 @@ class ETLService {
               bank_id: bank.id,
               bank_type: bank.type || "",
               bank_name: bank.name || "",
-              bank_code: bank.code || "",
+              bank_code: bank.code,
               swift_code: bank.swift || "",
               is_active: true,
               created_at: currentDateTime,
@@ -1355,11 +1387,14 @@ class ETLService {
 
           // Skip if we can't link to an employee
           if (!employeeId) continue;
-
+          const emplBankCode = financialDataMap.bank_code
+            ? financialDataMap.bank_code.toString()
+            : "";
           // Generate Bank ID
           const bankId = generateDeterministicUUID(
             financialDataMap.bank_type || "",
-            financialDataMap.bank_code || ""
+            emplBankCode
+            // financialDataMap.bank_code || ""
           );
 
           // Process employee bank details and financial details
@@ -1420,37 +1455,38 @@ class ETLService {
 
                 // Convert boolean fields
                 const pfDetailsAvailable =
-                  financialDataMap.pf_details_available === "true"
+                  financialDataMap.pf_details_available === "true" || true
                     ? true
-                    : financialDataMap.pf_details_available === "false"
+                    : financialDataMap.pf_details_available === "false" || false
                       ? false
                       : null;
 
                 const esiDetailsAvailable =
-                  financialDataMap.esi_details_available === "true"
+                  financialDataMap.esi_details_available === "true" || true
                     ? true
-                    : financialDataMap.esi_details_available === "false"
+                    : financialDataMap.esi_details_available === "false" ||
+                        false
                       ? false
                       : null;
 
                 const esiEligible =
-                  financialDataMap.esi_eligible === "true"
+                  financialDataMap.esi_eligible === "true" || true
                     ? true
-                    : financialDataMap.esi_eligible === "false"
+                    : financialDataMap.esi_eligible === "false" || false
                       ? false
                       : null;
 
                 const lwfEligible =
-                  financialDataMap.lwf_eligible === "true"
+                  financialDataMap.lwf_eligible === "true" || true
                     ? true
-                    : financialDataMap.lwf_eligible === "false"
+                    : financialDataMap.lwf_eligible === "false" || false
                       ? false
                       : null;
 
                 const panAvailable =
-                  financialDataMap.pan_available === "true"
+                  financialDataMap.pan_available === "true" || true
                     ? true
-                    : financialDataMap.pan_available === "false"
+                    : financialDataMap.pan_available === "false" || false
                       ? false
                       : null;
 
@@ -1588,11 +1624,22 @@ class ETLService {
                   : false;
 
             // Handle min_value and max_value (converting "null" strings to actual null values)
+            // let minValue = componentDataMap.min_value;
+            // if (minValue === "null") minValue = null;
+
+            // let maxValue = componentDataMap.max_value;
+            // if (maxValue === "null") maxValue = null;
             let minValue = componentDataMap.min_value;
-            if (minValue === "null") minValue = null;
+            minValue =
+              minValue && minValue !== "null"
+                ? parseFloat(minValue).toFixed(2)
+                : null;
 
             let maxValue = componentDataMap.max_value;
-            if (maxValue === "null") maxValue = null;
+            maxValue =
+              maxValue && maxValue !== "null"
+                ? parseFloat(maxValue).toFixed(2)
+                : null;
 
             // Convert rounding_factor to integer
             let roundingFactor = parseInt(
@@ -1685,28 +1732,38 @@ class ETLService {
 
             // Convert boolean fields
             const isDefault =
-              structureDataMap.is_default === "TRUE"
+              structureDataMap.is_default === "TRUE" || true
                 ? true
-                : structureDataMap.is_default === "FALSE"
+                : structureDataMap.is_default === "FALSE" || false
                   ? false
                   : null;
 
             // Handle min_ctc and max_ctc (ensuring they are numbers)
+            // let minCtc = structureDataMap.min_ctc;
+            // if (minCtc && minCtc !== "null") {
+            //   minCtc = minCtc.toString();
+            // } else {
+            //   minCtc = null;
+            // }
+
+            // let maxCtc = structureDataMap.max_ctc;
+            // if (maxCtc && maxCtc !== "null") {
+            //   maxCtc = maxCtc.toString();
+            // } else {
+            //   maxCtc = null;
+            // }
             let minCtc = structureDataMap.min_ctc;
-            if (minCtc && minCtc !== "null") {
-              minCtc = minCtc.toString();
-            } else {
-              minCtc = null;
-            }
+            minCtc =
+              minCtc && minCtc !== "null"
+                ? parseFloat(minCtc).toFixed(2)
+                : null;
 
             let maxCtc = structureDataMap.max_ctc;
-            if (maxCtc && maxCtc !== "null") {
-              maxCtc = maxCtc.toString();
-            } else {
-              maxCtc = null;
-            }
+            maxCtc =
+              maxCtc && maxCtc !== "null"
+                ? parseFloat(maxCtc).toFixed(2)
+                : null;
 
-            // Handle date fields
             let effectiveFrom = structureDataMap.effective_from;
             if (effectiveFrom === "null") effectiveFrom = null;
 
@@ -1803,8 +1860,13 @@ class ETLService {
             let percentageOfBasic = componentDataMap.percentage_of_basic;
             if (percentageOfBasic === "null") percentageOfBasic = null;
 
-            let percentageOfCtc = componentDataMap.percentage_of_ctc;
-            if (percentageOfCtc === "null") percentageOfCtc = null;
+            // let percentageOfCtc = componentDataMap.percentage_of_ctc;
+            // if (percentageOfCtc === "null") percentageOfCtc = null;
+            const percentageOfCtc =
+              componentDataMap.percentage_of_ctc &&
+              componentDataMap.percentage_of_ctc !== "null"
+                ? parseFloat(componentDataMap.percentage_of_ctc).toFixed(2)
+                : null;
 
             // Handle min_value, max_value, and default_value
             let minValue = componentDataMap.min_value;
@@ -1904,17 +1966,38 @@ class ETLService {
             if (effectiveTo === "null") effectiveTo = null;
 
             // Handle numeric fields
-            let annualCtc = salaryDataMap.annual_ctl;
-            if (annualCtc === "null") annualCtc = null;
+            // let annualCtc = salaryDataMap.annual_ctl;
+            // if (annualCtc === "null") annualCtc = null;
 
-            let monthlyCtc = salaryDataMap.monthly_ctc;
-            if (monthlyCtc === "null") monthlyCtc = null;
+            // let monthlyCtc = salaryDataMap.monthly_ctc;
+            // if (monthlyCtc === "null") monthlyCtc = null;
 
-            let basicPercentage = salaryDataMap.basic_percentage;
-            if (basicPercentage === "null") basicPercentage = null;
+            // let basicPercentage = salaryDataMap.basic_percentage;
+            // if (basicPercentage === "null") basicPercentage = null;
 
-            let hraPercentage = salaryDataMap.hra_percentage;
-            if (hraPercentage === "null") hraPercentage = null;
+            // let hraPercentage = salaryDataMap.hra_percentage;
+            // if (hraPercentage === "null") hraPercentage = null;
+            const annualCtc =
+              salaryDataMap.annual_ctc && salaryDataMap.annual_ctc !== "null"
+                ? parseFloat(salaryDataMap.annual_ctc).toFixed(2)
+                : null;
+
+            const monthlyCtc =
+              salaryDataMap.monthly_ctc && salaryDataMap.monthly_ctc !== "null"
+                ? parseFloat(salaryDataMap.monthly_ctc).toFixed(2)
+                : null;
+
+            const basicPercentage =
+              salaryDataMap.basic_percentage &&
+              salaryDataMap.basic_percentage !== "null"
+                ? parseFloat(salaryDataMap.basic_percentage).toFixed(2)
+                : null;
+
+            const hraPercentage =
+              salaryDataMap.hra_percentage &&
+              salaryDataMap.hra_percentage !== "null"
+                ? parseFloat(salaryDataMap.hra_percentage).toFixed(2)
+                : null;
 
             let revisionType = salaryDataMap.revision_type;
             if (revisionType === "null") revisionType = null;
