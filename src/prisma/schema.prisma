@@ -59,6 +59,7 @@ enum LeaveType {
   paternity
   unpaid
   compensatory
+  none
 }
 
 enum CaptureMethodEnum {
@@ -181,6 +182,7 @@ enum HalfDayType {
   second_half
   forenoon
   afternoon
+  none
 }
 
 enum AcknowledgementType {
@@ -194,6 +196,7 @@ enum OvertimeCalculationType {
   daily
   weekly
   monthly
+  none
 }
 
 enum LeaveRequestStatus {
@@ -237,18 +240,18 @@ enum RegularizationStatus {
 }
 
 enum SettingType {
-  STRING
-  NUMBER
-  BOOLEAN
-  DATE
-  TIME
-  DATETIME
-  JSON
-  ARRAY
-  SELECT
-  MULTISELECT
-  TEXTAREA
-  PASSWORD
+  string
+  number
+  boolean
+  date
+  time
+  datetime
+  json
+  array
+  select
+  multi_select
+  textarea
+  password
 }
 
 enum HolidayType {
@@ -292,6 +295,7 @@ enum PolicyCategory {
   training
   it_security
   general
+  probation
 }
 
 // Additional enums
@@ -476,7 +480,7 @@ model OrganizationTaxDetail {
 model OrganizationComplianceDetail {
   org_compliance_id     String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   org_id                String       @db.Uuid
-  compliance_code       String       @unique @db.VarChar(3)
+  compliance_code       String       @unique @db.VarChar(10)
   pf_establishment_id   String?      @unique @db.VarChar(50)
   pf_number             String       @unique @db.VarChar(50)
   pf_registration_date  DateTime     @db.Date
@@ -573,7 +577,7 @@ model Employee {
   last_name                      String                     @db.VarChar(50)
   display_name                   String                     @db.VarChar(100)
   date_of_birth                  DateTime                   @db.Date
-  gender                         Gender
+  gender                         Gender                     @default(male)
   official_email                 String?                    @unique @db.VarChar(255)
   personal_email                 String?                    @unique @db.VarChar(255)
   mobile_number                  String                     @db.VarChar(15)
@@ -645,23 +649,23 @@ model Employee {
 }
 
 model EmployeePersonalDetail {
-  empl_personal_det_id  String         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  employee_id           String         @db.Uuid
-  marital_status        MaritalStatus?
-  marriage_date         DateTime?      @db.Date
-  blood_group           String?        @db.VarChar(5)
-  nationality           String         @db.VarChar(50)
-  physically_challenged Boolean        @default(false)
-  disability_details    String?        @db.Text
-  father_name           String         @db.VarChar(100)
-  mother_name           String         @db.VarChar(100)
-  spouse_name           String?        @db.VarChar(100)
-  spouse_gender         Gender?
-  residence_number      String?        @db.VarChar(15)
+  empl_personal_det_id  String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  employee_id           String        @db.Uuid
+  marital_status        MaritalStatus @default(single)
+  marriage_date         DateTime?     @db.Date
+  blood_group           String?       @db.VarChar(5)
+  nationality           String        @db.VarChar(50)
+  physically_challenged Boolean       @default(false)
+  disability_details    String?       @db.Text
+  father_name           String        @db.VarChar(100)
+  mother_name           String        @db.VarChar(100)
+  spouse_name           String?       @db.VarChar(100)
+  spouse_gender         Gender?       @default(female)
+  residence_number      String?       @db.VarChar(15)
   social_media_handles  Json?
-  created_at            DateTime       @default(now())
-  updated_at            DateTime       @default(now())
-  employee              Employee       @relation(fields: [employee_id], references: [employee_id])
+  created_at            DateTime      @default(now())
+  updated_at            DateTime      @default(now())
+  employee              Employee      @relation(fields: [employee_id], references: [employee_id])
 
   @@map("employee_personal_details")
 }
@@ -746,8 +750,8 @@ model SalaryComponentMaster {
   org_id                String                     @db.Uuid
   component_name        String                     @db.VarChar(100)
   component_code        String                     @db.VarChar(20)
-  component_category    ComponentCategory
-  component_type        ComponentType
+  component_category    ComponentCategory          @default(earnings)
+  component_type        ComponentType              @default(fixed)
   calculation_type      CalculationType            @default(fixed)
   calculation_basis     String?                    @db.VarChar(50)
   calculation_formula   String?                    @db.Text
@@ -948,11 +952,11 @@ model PolicyModule {
   org_id                  String                          @db.Uuid
   module_name             String                          @db.VarChar(100)
   module_code             String                          @db.VarChar(50)
-  module_category         PolicyCategory
+  module_category         PolicyCategory                  @default(probation)
   module_description      String?                         @db.Text
   version                 String                          @default("1.0.0") @db.VarChar(20)
   is_mandatory            Boolean                         @default(false)
-  status                  PolicyStatus                    @default(draft)
+  status                  PolicyStatus                    @default(active)
   effective_from          DateTime                        @db.Date
   effective_to            DateTime?                       @db.Date
   created_at              DateTime                        @default(now())
@@ -980,7 +984,7 @@ model PolicySetting {
   setting_name     String       @db.VarChar(100)
   setting_key      String       @db.VarChar(50)
   setting_value    Json
-  setting_type     SettingType  @default(NUMBER)
+  setting_type     SettingType  @default(number)
   is_encrypted     Boolean      @default(false)
   is_configurable  Boolean      @default(true)
   validation_rules Json?
@@ -1038,7 +1042,7 @@ model PolicyDocumentVersion {
   version_number  String                 @db.VarChar(20)
   document_url    String?                @db.Text
   change_summary  String?                @db.Text
-  status          PolicyStatus           @default(draft)
+  status          PolicyStatus           @default(active)
   effective_from  DateTime               @db.Date
   effective_to    DateTime?              @db.Date
   approved_at     DateTime?
@@ -1107,8 +1111,8 @@ model LeavePolicyConfiguration {
   config_id                     String                @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   module_id                     String                @db.Uuid
   org_id                        String                @db.Uuid
-  leave_type                    LeaveType
-  accrual_frequency             LeaveAccrualFrequency
+  leave_type                    LeaveType             @default(casual)
+  accrual_frequency             LeaveAccrualFrequency @default(monthly)
   days_per_year                 Decimal               @db.Decimal(5, 2)
   min_days_per_request          Int?
   max_days_per_request          Int?
@@ -1242,16 +1246,16 @@ model AttendanceSettings {
   shiftEndTime               DateTime?                @map("shift_end_time") @db.Time()
   flexibleHours              Int?                     @map("flexible_hours")
   gracePeriodMinutes         Int                      @default(0) @map("grace_period_minutes")
-  halfDayHours               Int?                     @map("half_day_hours")
+  halfDayHours               Decimal?                 @map("half_day_hours") @db.Decimal(4, 2)
   fullDayHours               Decimal?                 @map("full_day_hours") @db.Decimal(4, 2)
   breakDurationMinutes       Int                      @default(60) @map("break_duration_minutes")
   workDaysPerWeek            Int                      @default(5) @map("work_days_per_week")
   overtimePolicyEnabled      Boolean                  @default(false) @map("overtime_policy_enabled")
   minimumOvertimeMinutes     Int?                     @map("minimum_overtime_minutes")
-  overtimeCalculationType    OvertimeCalculationType? @map("overtime_calculation_type")
+  overtimeCalculationType    OvertimeCalculationType? @default(none) @map("overtime_calculation_type")
   maxOvertimeHoursMonthly    Int?                     @map("max_overtime_hours_monthly")
-  latePenaltyType            PenaltyType              @default(none) @map("late_penalty_type")
-  latePenaltyLeaveType       LeaveType?               @map("late_penalty_leave_type")
+  latePenaltyType            PenaltyType?             @default(none) @map("late_penalty_type")
+  latePenaltyLeaveType       LeaveType?               @default(none) @map("late_penalty_leave_type")
   missingSwipePolicy         String?                  @map("missing_swipe_policy") @db.VarChar(50)
   autoCheckoutEnabled        Boolean                  @default(false) @map("auto_checkout_enabled")
   autoCheckoutTime           DateTime?                @map("auto_checkout_time") @db.Time()
@@ -1373,8 +1377,8 @@ model EmployeeShiftAssignment {
   assignment_id     String             @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   employee_id       String             @db.Uuid
   shift_id          String             @db.Uuid
-  effective_from    DateTime           @db.Date
-  effective_to      DateTime?          @db.Date
+  effective_from    DateTime           @db.Timestamp(3)
+  effective_to      DateTime?          @db.Timestamp(3)
   created_at        DateTime           @default(now())
   updated_at        DateTime           @default(now())
   created_by        String?            @db.Uuid
@@ -1391,8 +1395,8 @@ model HolidayCalendarYear {
   calendar_id     String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   org_id          String                  @db.Uuid
   year            Int
-  start_date      DateTime                @db.Date
-  end_date        DateTime                @db.Date
+  start_date      DateTime                @db.Timestamp(3)
+  end_date        DateTime                @db.Timestamp(3)
   status          Status                  @default(active)
   created_at      DateTime                @default(now())
   updated_at      DateTime                @default(now())
@@ -1407,8 +1411,8 @@ model HolidayMaster {
   holiday_id      String                  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   org_id          String                  @db.Uuid
   holiday_name    String                  @db.VarChar(100)
-  holiday_type    HolidayType
-  recurrence_type HolidayRecurrence
+  holiday_type    HolidayType             @default(religious)
+  recurrence_type HolidayRecurrence       @default(yearly_variable_date)
   description     String?                 @db.Text
   created_at      DateTime                @default(now())
   updated_at      DateTime                @default(now())
@@ -1423,9 +1427,9 @@ model HolidayCalendarDetail {
   calendar_detail_id    String                         @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   calendar_id           String                         @db.Uuid
   holiday_id            String                         @db.Uuid
-  holiday_date          DateTime                       @db.Date
+  holiday_date          DateTime                       @db.Timestamp(3)
   is_half_day           Boolean                        @default(false)
-  half_day_type         HalfDayType?
+  half_day_type         HalfDayType?                   @default(none)
   created_at            DateTime                       @default(now())
   updated_at            DateTime                       @default(now())
   calendar              HolidayCalendarYear            @relation(fields: [calendar_id], references: [calendar_id], onDelete: Cascade)

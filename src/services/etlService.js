@@ -540,6 +540,125 @@ class ETLService {
   }
 
   /**
+   * Extract time only from a date/time string or Excel time value
+   * @param {string|Date} timeValue - Time value from Excel or time string
+   * @returns {string|null} - Time in ISO format or null if invalid
+   */
+  convertToTimeOnly(timeValue) {
+    if (!timeValue) return null;
+
+    // Handle if it's already a Date object
+    let date;
+    if (timeValue instanceof Date) {
+      date = timeValue;
+    } else if (typeof timeValue === "string") {
+      // Try to parse as a time string like "9:00:00 AM"
+      const timeRegex = /^(\d{1,2}):(\d{1,2}):(\d{1,2})\s*(AM|PM)?$/i;
+      const match = timeValue.trim().match(timeRegex);
+
+      if (match) {
+        // It's a time string like "9:00:00 AM"
+        let [_, hours, minutes, seconds, ampm] = match;
+        hours = parseInt(hours);
+
+        // Handle AM/PM
+        if (ampm && ampm.toUpperCase() === "PM" && hours < 12) {
+          hours += 12;
+        } else if (ampm && ampm.toUpperCase() === "AM" && hours === 12) {
+          hours = 0;
+        }
+
+        // Create a time-only ISO string
+        return `${hours.toString().padStart(2, "0")}:${minutes}:${seconds}`;
+      }
+
+      // If not a simple time string, try to parse as a full date
+      date = new Date(timeValue);
+    } else {
+      return null;
+    }
+
+    // Check if the date is valid
+    if (isNaN(date.getTime())) {
+      logger.warn({
+        message: `Failed to parse time value: ${timeValue}`,
+        metadata: { timeValue },
+      });
+      return null;
+    }
+
+    // Extract only the time portion
+    return date.toISOString().split("T")[1].substring(0, 8);
+  }
+
+  /**
+   * Function to convert various date formats to ISO 8601 format
+   * @param {string} dateStr - Date string in formats like DD-MM-YYYY, DD/MM/YYYY, etc.
+   * @returns {string|null} - Date in ISO format or null if invalid
+   */
+  convertToISOString(dateStr) {
+    if (!dateStr) return null; // Handle empty or null values
+
+    // Trim the input to remove any whitespace
+    dateStr = dateStr.trim();
+
+    // Try parsing common date formats
+    // Format: DD-MM-YYYY
+    let match = dateStr.match(/^(\d{1,2})-(\d{1,2})-(\d{4})$/);
+    if (match) {
+      const [_, day, month, year] = match;
+      const formattedDate = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00.000Z`
+      );
+      if (!isNaN(formattedDate)) return formattedDate.toISOString();
+    }
+
+    // Format: DD/MM/YYYY
+    match = dateStr.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (match) {
+      const [_, day, month, year] = match;
+      const formattedDate = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00.000Z`
+      );
+      if (!isNaN(formattedDate)) return formattedDate.toISOString();
+    }
+
+    // Format: YYYY-MM-DD (ISO format)
+    match = dateStr.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+    if (match) {
+      const [_, year, month, day] = match;
+      const formattedDate = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00.000Z`
+      );
+      if (!isNaN(formattedDate)) return formattedDate.toISOString();
+    }
+
+    // Format: YYYY/MM/DD
+    match = dateStr.match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})$/);
+    if (match) {
+      const [_, year, month, day] = match;
+      const formattedDate = new Date(
+        `${year}-${month.padStart(2, "0")}-${day.padStart(2, "0")}T00:00:00.000Z`
+      );
+      if (!isNaN(formattedDate)) return formattedDate.toISOString();
+    }
+
+    // Try direct JavaScript Date parsing as a fallback
+    const jsDate = new Date(dateStr);
+    if (!isNaN(jsDate.getTime())) {
+      return jsDate.toISOString();
+    }
+
+    // Log the failed parsing attempt
+    logger.warn({
+      message: `Failed to parse date: ${dateStr}`,
+      metadata: { dateStr },
+    });
+
+    return null; // Return null for invalid date formats
+  }
+
+  /**
    * Transform the data according to business rules
    * @param {Object} data - Processed data from all sheets
    * @returns {Promise<Object>} - Transformed data
@@ -676,7 +795,7 @@ class ETLService {
           pan: orgDataMap.pan || "",
           tan: orgDataMap.tan || "",
           tan_circle_number: orgDataMap.tan_circle_number || "",
-          corporated_income_tax_location:
+          corporate_income_tax_location:
             orgDataMap.corporate_income_tax_locations || "",
           created_at: currentDateTime,
           updated_at: currentDateTime,
@@ -685,11 +804,17 @@ class ETLService {
         const pfEstablishmentId = orgDataMap.pf_establishment_id
           ? orgDataMap.pf_establishment_id.toString()
           : "";
+        const pfNumber = orgDataMap.pf_number
+          ? orgDataMap.pf_number.toString()
+          : "";
         // 5. Organization Compliance Detail
         const orgComplianceId = generateDeterministicUUID(
           orgDataMap.compliance_code,
-          orgDataMap.pf_number
+          pfNumber
         );
+        const esiNumber = orgDataMap.esi_number
+          ? orgDataMap.esi_number.toString()
+          : "";
         const orgComplianceDetailObj = {
           org_compliance_id: orgComplianceId,
           org_id: orgId,
@@ -697,7 +822,7 @@ class ETLService {
           pf_establishment_id: pfEstablishmentId,
           pf_number: orgDataMap.pf_number || "",
           pf_registration_date: orgDataMap.pf_registration_date || null,
-          esi_number: orgDataMap.esi_number || "",
+          esi_number: esiNumber,
           esi_registration_date: orgDataMap.esi_registration_date || null,
           pt_establishment_id: orgDataMap.pt_establishment_id || "",
           pt_number: orgDataMap.pt_number || "",
@@ -1051,34 +1176,49 @@ class ETLService {
           employeeIdsByNumber[empDataMap.employee_number] = employeeId;
 
           // Get org ID
-          const orgId = generateDeterministicUUID(
-            empDataMap.auth_signatory_designation,
-            empDataMap.cin
-          );
+          const orgId =
+            empDataMap.auth_signatory_designation && empDataMap.cin
+              ? generateDeterministicUUID(
+                  empDataMap.auth_signatory_designation,
+                  empDataMap.cin
+                )
+              : null;
 
           // Get employment type ID
-          const employmentTypeId = generateDeterministicUUID(
-            empDataMap.type_name,
-            empDataMap.type_code
-          );
+          const employmentTypeId =
+            empDataMap.type_name && empDataMap.type_code
+              ? generateDeterministicUUID(
+                  empDataMap.type_name,
+                  empDataMap.type_code
+                )
+              : null;
 
           // Get department ID
-          const deptId = generateDeterministicUUID(
-            empDataMap.dept_type_code,
-            empDataMap.dept_code
-          );
+          const deptId =
+            empDataMap.dept_type_code && empDataMap.dept_code
+              ? generateDeterministicUUID(
+                  empDataMap.dept_type_code,
+                  empDataMap.dept_code
+                )
+              : null;
 
           // Get work location ID (location_code, city)
-          const workLocationId = generateDeterministicUUID(
-            empDataMap.work_location_code,
-            empDataMap.work_location_city
-          );
+          const workLocationId =
+            empDataMap.work_location_code && empDataMap.work_location_city
+              ? generateDeterministicUUID(
+                  empDataMap.work_location_code,
+                  empDataMap.work_location_city
+                )
+              : null;
 
           // Get job title ID
-          const jobTitleId = generateDeterministicUUID(
-            empDataMap.title_code,
-            empDataMap.grade_level
-          );
+          const jobTitleId =
+            empDataMap.title_code && empDataMap.grade_level
+              ? generateDeterministicUUID(
+                  empDataMap.title_code,
+                  empDataMap.grade_level
+                )
+              : null;
           let mobileNumber = empDataMap.mobile_number || "";
           mobileNumber = mobileNumber.toString();
           let emergencyContactNumber =
@@ -1088,40 +1228,40 @@ class ETLService {
           // Only add employee if it hasn't been added yet
           if (!createdEntities.employees[employeeId]) {
             createdEntities.employees[employeeId] = true;
-            // const reporting_manager_emp_number:
-            //     empDataMap.reporting_manager_employee_number || "",
-            //   reporting_manager_first_name:
-            //     empDataMap.reporting_manager_first_name || "",
+
             // Store reporting manager information for second pass
             const employeeObj = {
               employee_id: employeeId,
               org_id: orgId,
               employee_number: empDataMap.employee_number || "",
-              employment_type_id: employmentTypeId,
-              dept_id: deptId,
-              work_location_id: workLocationId,
-              job_title_id: jobTitleId,
-              title: empDataMap.title || "",
+              employment_type_id: employmentTypeId || null,
+              dept_id: deptId || null,
+              work_location_id: workLocationId || null,
+              job_title_id: jobTitleId || null,
+              title: empDataMap.title || null,
               first_name: empDataMap.first_name || "",
-              middle_name: empDataMap.middle_name || "",
+              middle_name: empDataMap.middle_name || null,
               last_name: empDataMap.last_name || "",
               display_name: empDataMap.display_name || "",
-              date_of_birth: empDataMap.date_of_birth || "",
-              gender: empDataMap.gender || "",
-              official_email: empDataMap.official_email || "",
-              personal_email: empDataMap.personal_email || "",
-              // mobile_number: empDataMap.mobile_number || "",
+              date_of_birth: this.convertToISOString(empDataMap.date_of_birth),
+              gender: empDataMap.gender || male,
+              official_email: empDataMap.official_email || null,
+              personal_email: empDataMap.personal_email || null,
               mobile_number: mobileNumber || "",
-              emergency_contact_name: empDataMap.emergency_contact_name || "",
+              emergency_contact_name: empDataMap.emergency_contact_name || null,
               emergency_contact_relationship:
-                empDataMap.emergency_contact_relationship || "",
-              // emergency_contact_number:
-              // empDataMap.emergnecy_contact_number || "", // Note the typo in the header
+                empDataMap.emergency_contact_relationship || null,
               emergency_contact_number: emergencyContactNumber || "",
-              date_joined: empDataMap.date_joined || "",
-              probation_end_date: empDataMap.probation_end_date || "",
-              confirmation_date: empDataMap.confirmation_date || "",
-              contract_end_date: empDataMap.contract_end_date || "",
+              date_joined: this.convertToISOString(empDataMap.date_joined),
+              probation_end_date: this.convertToISOString(
+                empDataMap.probation_end_date
+              ),
+              confirmation_date: this.convertToISOString(
+                empDataMap.confirmation_date
+              ),
+              contract_end_date: this.convertToISOString(
+                empDataMap.contract_end_date
+              ),
               reporting_manager_emp_number:
                 empDataMap.reporting_manager_employee_number || "",
               reporting_manager_first_name:
@@ -1143,26 +1283,46 @@ class ETLService {
           // Skip non-employee objects
           if (!employee.employee_id) continue;
 
-          // Update reporting manager ID if available
+          // Explicitly set reporting_manager_id to null by default
+          employee.reporting_manager_id = null;
+
+          // Update reporting manager ID if both emp number and first name are available
           if (
             employee.reporting_manager_emp_number &&
-            employee.reporting_manager_first_name
+            employee.reporting_manager_emp_number.trim() !== "" &&
+            employee.reporting_manager_first_name &&
+            employee.reporting_manager_first_name.trim() !== ""
           ) {
+            // Try to find the manager ID in our existing employees
             const managerId =
               employeeIdsByNumber[employee.reporting_manager_emp_number];
+
             if (managerId) {
+              // Use the manager ID if found in our employee list
               employee.reporting_manager_id = managerId;
-            } else if (
-              employee.reporting_manager_emp_number &&
-              employee.reporting_manager_first_name
-            ) {
-              // Generate manager ID if not found in employee list
+              logger.info(
+                `Set reporting manager ${employee.reporting_manager_emp_number} for employee ${employee.employee_number}`
+              );
+            } else {
+              // Generate manager ID if not found in employee list but we have complete info
               employee.reporting_manager_id = generateDeterministicUUID(
                 employee.reporting_manager_emp_number,
                 employee.reporting_manager_first_name
               );
+              logger.info(
+                `Generated reporting manager ID for ${employee.reporting_manager_emp_number} (not found in employee list)`
+              );
             }
+          } else {
+            // Log when reporting manager info is incomplete
+            logger.info(
+              `No complete reporting manager info for employee ${employee.employee_number}`
+            );
           }
+
+          // Clean up temporary properties that aren't in the Prisma schema
+          delete employee.reporting_manager_emp_number;
+          delete employee.reporting_manager_first_name;
         }
       }
 
@@ -1257,8 +1417,10 @@ class ETLService {
               employee_id: employeeId,
               marital_status: personalDataMap.marital_status
                 ? personalDataMap.marital_status.toLowerCase()
-                : null,
-              marriage_date: personalDataMap.marriage_date || null,
+                : single,
+              marriage_date: this.convertToISOString(
+                personalDataMap.marriage_date
+              ),
               blood_group: personalDataMap.blood_group || null,
               nationality: personalDataMap.nationality || null,
               physically_challenged: physicallyChalleneged,
@@ -1268,7 +1430,7 @@ class ETLService {
               spouse_name: personalDataMap.spouse_name || null,
               spouse_gender: personalDataMap.spouse_gender
                 ? personalDataMap.spouse_gender.toLowerCase()
-                : null,
+                : female,
               // residence_number: personalDataMap.residence_number || null,
               residence_number: residenceNumber || null,
               social_media_handles: socialMediaHandles,
@@ -1499,7 +1661,9 @@ class ETLService {
                     financialDataMap.salary_payment_mode || null,
                   pf_details_available: pfDetailsAvailable,
                   pf_number: financialDataMap.pf_number || null,
-                  pf_joining_date: financialDataMap.pf_joining_date || null,
+                  pf_joining_date: this.convertToISOString(
+                    financialDataMap.pf_joining_date
+                  ),
                   employee_contribution_to_pf:
                     financialDataMap.employee_contribution_to_pf || null,
                   uan: financialDataMap.uan || null,
@@ -1514,7 +1678,9 @@ class ETLService {
                   aadhar_number: financialDataMap.aadhar_number
                     ? String(financialDataMap.aadhar_number)
                     : null,
-                  dob_in_aadhar: financialDataMap.dob_in_aadhar || null,
+                  dob_in_aadhar: this.convertToISOString(
+                    financialDataMap.dob_in_aadhar
+                  ),
                   full_name_in_aadhar:
                     financialDataMap.full_name_in_aadhar || null,
                   gender_in_aadhar: financialDataMap.gender_in_aadhar
@@ -1523,7 +1689,9 @@ class ETLService {
                   pan_available: panAvailable,
                   pan_number: financialDataMap.pan_number || null,
                   full_name_in_pan: financialDataMap.full_name_in_pan || null,
-                  dob_in_pan: financialDataMap.dob_in_pan || null,
+                  dob_in_pan: this.convertToISOString(
+                    financialDataMap.dob_in_pan
+                  ),
                   parents_name_in_pan:
                     financialDataMap.parent_name_in_pan || null,
                   created_at: currentDateTime,
@@ -1654,11 +1822,12 @@ class ETLService {
               org_id: orgId,
               component_name: componentDataMap.component_name || null,
               component_code: componentDataMap.component_code || null,
-              component_category: componentDataMap.component_category || null,
+              component_category:
+                componentDataMap.component_category || earnings,
               component_type: componentDataMap.component_type
                 ? componentDataMap.component_type.toLowerCase()
-                : null,
-              calculation_type: componentDataMap.calculation_type || null,
+                : fixed,
+              calculation_type: componentDataMap.calculation_type || fixed,
               calculation_basis: componentDataMap.calculation_basis || null,
               calculation_formula: componentDataMap.calculation_formula || null,
               calculation_frequency:
@@ -1764,11 +1933,12 @@ class ETLService {
                 ? parseFloat(maxCtc).toFixed(2)
                 : null;
 
-            let effectiveFrom = structureDataMap.effective_from;
-            if (effectiveFrom === "null") effectiveFrom = null;
-
-            let effectiveTo = structureDataMap.effective_to;
-            if (effectiveTo === "null") effectiveTo = null;
+            let effectiveFrom = this.convertToISOString(
+              structureDataMap.effective_from
+            );
+            let effectiveTo = this.convertToISOString(
+              structureDataMap.effective_to
+            );
 
             // Create salary structure object
             const salaryStructureObj = {
@@ -1978,8 +2148,8 @@ class ETLService {
             // let hraPercentage = salaryDataMap.hra_percentage;
             // if (hraPercentage === "null") hraPercentage = null;
             const annualCtc =
-              salaryDataMap.annual_ctc && salaryDataMap.annual_ctc !== "null"
-                ? parseFloat(salaryDataMap.annual_ctc).toFixed(2)
+              salaryDataMap.annual_ctl && salaryDataMap.annual_ctl !== "null"
+                ? parseFloat(salaryDataMap.annual_ctl).toFixed(2)
                 : null;
 
             const monthlyCtc =
@@ -2192,21 +2362,21 @@ class ETLService {
             let totalGross = runDataMap.total_gross;
             if (totalGross && typeof totalGross === "string") {
               totalGross = totalGross.replace(/,/g, "");
-              totalGross = parseFloat(totalGross);
+              totalGross = parseFloat(totalGross).toFixed(2);
               if (isNaN(totalGross)) totalGross = null;
             }
 
             let totalDeductions = runDataMap.total_deductions;
             if (totalDeductions && typeof totalDeductions === "string") {
               totalDeductions = totalDeductions.replace(/,/g, "");
-              totalDeductions = parseFloat(totalDeductions);
+              totalDeductions = parseFloat(totalDeductions).toFixed(2);
               if (isNaN(totalDeductions)) totalDeductions = null;
             }
 
             let totalNetPay = runDataMap.total_net_pay;
             if (totalNetPay && typeof totalNetPay === "string") {
               totalNetPay = totalNetPay.replace(/,/g, "");
-              totalNetPay = parseFloat(totalNetPay);
+              totalNetPay = parseFloat(totalNetPay).toFixed(2);
               if (isNaN(totalNetPay)) totalNetPay = null;
             }
 
@@ -2219,35 +2389,19 @@ class ETLService {
             } else {
               locked = null;
             }
-            // Function to convert "DD-MM-YYYY" to ISO 8601 format
-            const convertToISOString = (dateStr) => {
-              if (!dateStr) return null; // Handle null values
-
-              // Match "DD-MM-YYYY" format
-              const regex = /^(\d{2})-(\d{2})-(\d{4})$/;
-              const match = dateStr.match(regex);
-
-              if (!match) return null; // Invalid format
-
-              const [_, day, month, year] = match; // Extract day, month, year
-              const formattedDate = new Date(
-                `${year}-${month}-${day}T00:00:00.000Z`
-              ); // Convert to ISO format
-
-              return isNaN(formattedDate) ? null : formattedDate.toISOString();
-            };
+            // Use the class-level convertToISOString method
             // Create payroll run object
             const payrollRunObj = {
               run_id: runId,
               org_id: orgId,
               cycle_id: cycleId,
-              run_date: runDataMap.run_date || null,
-              start_date: runDataMap.start_date || null,
-              end_date: runDataMap.end_date || null,
+              run_date: this.convertToISOString(runDataMap.run_date),
+              start_date: this.convertToISOString(runDataMap.start_date),
+              end_date: this.convertToISOString(runDataMap.end_date),
               total_employees: totalEmployees,
-              total_gross: totalGross,
-              total_deductions: totalDeductions,
-              total_net_pay: totalNetPay,
+              total_gross: parseFloat(totalGross).toFixed(2),
+              total_deductions: parseFloat(totalDeductions).toFixed(2),
+              total_net_pay: parseFloat(totalNetPay).toFixed(2),
               status: runDataMap.status || "pending",
               locked: locked,
               processed_by: processedById,
@@ -3222,8 +3376,12 @@ class ETLService {
               calendar_id: calendarId,
               org_id: orgId,
               year: year,
-              start_date: holidayDataMap.start_date || null,
-              end_date: holidayDataMap.end_date || null,
+              start_date: holidayDataMap.start_date
+                ? this.convertToISOString(holidayDataMap.start_date)
+                : null,
+              end_date: holidayDataMap.end_date
+                ? this.convertToISOString(holidayDataMap.end_date)
+                : null,
               status: "active", // Default status if missing
               created_at: currentDateTime,
               updated_at: currentDateTime,
@@ -3247,8 +3405,9 @@ class ETLService {
               holiday_id: holidayId,
               org_id: orgId,
               holiday_name: holidayDataMap.holiday_name || "",
-              holiday_type: holidayDataMap.holiday_type || "",
-              recurrence_type: holidayDataMap.recurrence_type || "",
+              holiday_type: holidayDataMap.holiday_type || "religious",
+              recurrence_type:
+                holidayDataMap.recurrence_type || "yearly_variable_date",
               description: holidayDataMap.description || "",
               created_at: currentDateTime,
               updated_at: currentDateTime,
@@ -3278,17 +3437,21 @@ class ETLService {
             }
 
             // Handle half day type
-            let halfDayType = holidayDataMap.half_day_type;
-            if (halfDayType === "FALSE" || halfDayType === "false") {
-              halfDayType = null;
-            }
+            let halfDayType = holidayDataMap.half_day_type
+              ? holidayDataMap.half_day_type
+              : "none";
+            // if (halfDayType === "FALSE" || halfDayType === "false") {
+            //   halfDayType = null;
+            // }
 
             // Create holiday calendar details object
             const holidayCalendarDetailsObj = {
               calendar_detail_id: calendarDetailId,
               calendar_id: calendarId,
               holiday_id: holidayId,
-              holiday_date: holidayDataMap.holiday_date || null,
+              holiday_date: holidayDataMap.holiday_date
+                ? this.convertToISOString(holidayDataMap.holiday_date)
+                : null,
               is_half_day: isHalfDay,
               half_day_type: halfDayType,
               created_at: currentDateTime,
@@ -3315,12 +3478,293 @@ class ETLService {
       // after the holiday_master_details processing section, before the writeFile call
 
       // Process attendance_managment sheet if it exists (note the spelling in the Excel sheet)
+      // if (data.attendance_managment && data.attendance_managment.length >= 3) {
+      //   // Headers are in the second row (index 1)
+      //   const headers = data.attendance_managment[1];
+
+      //   // Track created attendance settings to avoid duplicates
+      //   const createdAttendanceSettings = {};
+
+      //   // Process each attendance management row starting from index 2 (skipping header rows)
+      //   for (
+      //     let rowIndex = 2;
+      //     rowIndex < data.attendance_managment.length;
+      //     rowIndex++
+      //   ) {
+      //     const attendanceData = data.attendance_managment[rowIndex];
+
+      //     // Create a map of header to value for easier access
+      //     const attendanceDataMap = {};
+      //     headers.forEach((header, index) => {
+      //       if (header) {
+      //         attendanceDataMap[header] = attendanceData[index];
+      //       }
+      //     });
+
+      //     // Skip if required fields are missing
+      //     if (!attendanceDataMap.shift_type || !attendanceDataMap.module_code)
+      //       continue;
+
+      //     // Generate unique IDs
+      //     const id = generateDeterministicUUID(
+      //       attendanceDataMap.shift_type || "",
+      //       attendanceDataMap.capture_method || ""
+      //     );
+
+      //     const orgId = generateDeterministicUUID(
+      //       attendanceDataMap.auth_signatory_designation || "",
+      //       attendanceDataMap.cin || ""
+      //     );
+
+      //     const moduleId = generateDeterministicUUID(
+      //       attendanceDataMap.module_code || "",
+      //       attendanceDataMap.module_category || ""
+      //     );
+
+      //     const createdById = generateDeterministicUUID(
+      //       attendanceDataMap.created_by_emp_number || "",
+      //       attendanceDataMap.created_by_emp_first_name || ""
+      //     );
+
+      //     const updatedById = generateDeterministicUUID(
+      //       attendanceDataMap.updated_by_emp_number || "",
+      //       attendanceDataMap.updated_by_emp_first_name || ""
+      //     );
+
+      //     // Check if this attendance setting has been processed already
+      //     if (!createdAttendanceSettings[id]) {
+      //       createdAttendanceSettings[id] = true;
+
+      //       // Convert boolean fields
+      //       let geoFencingEnabled = attendanceDataMap.geo_fencing_enabled;
+      //       if (geoFencingEnabled === "TRUE" || geoFencingEnabled === true) {
+      //         geoFencingEnabled = true;
+      //       } else if (
+      //         geoFencingEnabled === "FALSE" ||
+      //         geoFencingEnabled === false
+      //       ) {
+      //         geoFencingEnabled = false;
+      //       } else {
+      //         geoFencingEnabled = false;
+      //       }
+
+      //       let overtimePolicyEnabled =
+      //         attendanceDataMap.overtime_policy_enabled;
+      //       if (
+      //         overtimePolicyEnabled === "TRUE" ||
+      //         overtimePolicyEnabled === true
+      //       ) {
+      //         overtimePolicyEnabled = true;
+      //       } else if (
+      //         overtimePolicyEnabled === "FALSE" ||
+      //         overtimePolicyEnabled === false
+      //       ) {
+      //         overtimePolicyEnabled = false;
+      //       } else {
+      //         overtimePolicyEnabled = false;
+      //       }
+
+      //       let autoCheckoutEnabled = attendanceDataMap.auto_checkout_enabled;
+      //       if (
+      //         autoCheckoutEnabled === "TRUE" ||
+      //         autoCheckoutEnabled === true
+      //       ) {
+      //         autoCheckoutEnabled = true;
+      //       } else if (
+      //         autoCheckoutEnabled === "FALSE" ||
+      //         autoCheckoutEnabled === false
+      //       ) {
+      //         autoCheckoutEnabled = false;
+      //       } else {
+      //         autoCheckoutEnabled = false;
+      //       }
+
+      //       let regularizationAllowed =
+      //         attendanceDataMap.regularization_allowed;
+      //       if (
+      //         regularizationAllowed === "TRUE" ||
+      //         regularizationAllowed === true
+      //       ) {
+      //         regularizationAllowed = true;
+      //       } else if (
+      //         regularizationAllowed === "FALSE" ||
+      //         regularizationAllowed === false
+      //       ) {
+      //         regularizationAllowed = false;
+      //       } else {
+      //         regularizationAllowed = true;
+      //       }
+
+      //       // Convert numeric fields
+      //       const geoFenceRadius = attendanceDataMap.geo_fence_radius
+      //         ? parseInt(attendanceDataMap.geo_fence_radius)
+      //         : null;
+      //       const gracePeriodMinutes = attendanceDataMap.grace_period_minutes
+      //         ? parseInt(attendanceDataMap.grace_period_minutes)
+      //         : 0;
+      //       const halfDayHours = attendanceDataMap.half_day_hours
+      //         ? parseFloat(attendanceDataMap.half_day_hours).toFixed(2)
+      //         : null;
+      //       const fullDayHours = attendanceDataMap.full_day_hours
+      //         ? parseFloat(attendanceDataMap.full_day_hours).toFixed(2)
+      //         : null;
+      //       const breakDurationMinutes =
+      //         attendanceDataMap.break_duration_minutes
+      //           ? parseInt(attendanceDataMap.break_duration_minutes)
+      //           : 60;
+      //       const workDaysPerWeek = attendanceDataMap.work_days_per_week
+      //         ? parseInt(attendanceDataMap.work_days_per_week)
+      //         : 5;
+      //       const minimumOvertimeMinutes =
+      //         attendanceDataMap.minimum_overtime_minutes
+      //           ? parseInt(attendanceDataMap.minimum_overtime_minutes)
+      //           : null;
+      //       const maxOvertimeHoursMonthly =
+      //         attendanceDataMap.max_overtime_hours_monthly
+      //           ? parseInt(attendanceDataMap.max_overtime_hours_monthly)
+      //           : null;
+      //       const regularizationWindowDays =
+      //         attendanceDataMap.regularization_window_days
+      //           ? parseInt(attendanceDataMap.regularization_window_days)
+      //           : 7;
+      //       const regularizationLimitMonthly =
+      //         attendanceDataMap.regularization_limit_monthly
+      //           ? parseInt(attendanceDataMap.regularization_limit_monthly)
+      //           : 3;
+      //       const weekendOvertimeMultiplier =
+      //         attendanceDataMap.weekend_overtime_multiplier
+      //           ? parseFloat(
+      //               attendanceDataMap.weekend_overtime_multiplier
+      //             ).toFixed(2)
+      //           : 2.0;
+      //       const holidayOvertimeMultiplier =
+      //         attendanceDataMap.holiday_overtime_multiplier
+      //           ? parseFloat(
+      //               attendanceDataMap.holiday_overtime_multiplier
+      //             ).toFixed(2)
+      //           : 2.0;
+      //       const flexibleHours = attendanceDataMap.flexible_hours
+      //         ? parseInt(attendanceDataMap.flexible_hours)
+      //         : null;
+
+      //       // Create attendance setting object
+      //       const attendanceSettingObj = {
+      //         id: id,
+      //         organizationId: orgId,
+      //         moduleId: moduleId,
+      //         // captureMethods: attendanceDataMap.capture_method || "",
+      //         captureMethods: attendanceDataMap.capture_method
+      //           ? JSON.parse(
+      //               attendanceDataMap.capture_method.replace(/'/g, '"')
+      //             )
+      //           : ["web_app"],
+      //         geoFencingEnabled: geoFencingEnabled,
+      //         geoFenceRadius: geoFenceRadius,
+      //         shiftType: attendanceDataMap.shift_type
+      //           ? attendanceDataMap.shift_type
+      //           : "fixed",
+      //         // shift_start_time: attendanceDataMap.shift_start_time
+      //         //   ? attendanceDataMap.shift_start_time.replace("t", "T")
+      //         //   : null,
+      //         shift_start_time: attendanceDataMap.shift_start_time
+      //           ? this.convertToTimeOnly(attendanceDataMap.shift_start_time)
+      //           : null,
+      //         shift_end_time: attendanceDataMap.shift_end_time
+      //           ? this.convertToTimeOnly(attendanceDataMap.shift_end_time)
+      //           : null,
+      //         flexibleHours: flexibleHours,
+      //         grace_period_minutes: gracePeriodMinutes,
+      //         halfDayHours: halfDayHours,
+      //         fullDayHours: fullDayHours,
+      //         breakDurationMinutes: breakDurationMinutes,
+      //         workDaysPerWeek: workDaysPerWeek,
+      //         overtimePolicyEnabled: overtimePolicyEnabled,
+      //         minimumOvertimeMinutes: minimumOvertimeMinutes,
+      //         overtime_calculation_type:
+      //           attendanceDataMap.overtime_calculation_type || null,
+      //         maxOvertimeHoursMonthly: maxOvertimeHoursMonthly,
+      //         latePenaltyType: attendanceDataMap.late_penalty_type || "",
+      //         late_penalty_leave_type:
+      //           attendanceDataMap.late_penalty_leave_type || null,
+      //         missing_swipe_policy: attendanceDataMap.missing_swipte_policy
+      //           ? attendanceDataMap.missing_swipte_policy
+      //           : null,
+      //         autoCheckoutEnabled: autoCheckoutEnabled,
+      //         auto_checkout_time: attendanceDataMap.auto_checkout_time
+      //           ? this.convertToTimeOnly(attendanceDataMap.auto_checkout_time)
+      //           : null,
+      //         regularizationAllowed: regularizationAllowed,
+      //         regularization_window_days: regularizationWindowDays,
+      //         regularization_limit_monthly: regularizationLimitMonthly,
+      //         weekendOvertimeMultiplier: weekendOvertimeMultiplier,
+      //         holidayOvertimeMultiplier: holidayOvertimeMultiplier,
+      //         created_at: currentDateTime,
+      //         updated_at: currentDateTime,
+      //         created_by: createdById ? createdById : null,
+      //         updated_by: updatedById ? updatedById : null,
+      //       };
+      //       // Debug log to verify the object has all required fields
+      //       console.log(
+      //         "Attendance Setting Object:",
+      //         JSON.stringify(attendanceSettingObj, null, 2)
+      //       );
+
+      //       transformedData.push(attendanceSettingObj);
+      //     }
+      //   }
+      // }
       if (data.attendance_managment && data.attendance_managment.length >= 3) {
         // Headers are in the second row (index 1)
         const headers = data.attendance_managment[1];
 
         // Track created attendance settings to avoid duplicates
         const createdAttendanceSettings = {};
+
+        // Helper function to properly format time values
+        const formatTimeValue = (timeStr) => {
+          if (!timeStr) return null;
+
+          const cleanStr = timeStr.toString().trim().toLowerCase();
+
+          // Extract time part if in datetime format
+          if (cleanStr.includes("t")) {
+            const parts = cleanStr.split("t");
+            if (parts.length > 1) {
+              return parts[1].trim();
+            }
+          }
+
+          // If it's already in time format, return it
+          if (cleanStr.match(/^\d{1,2}:\d{2}:\d{2}$/)) {
+            // Ensure hours are padded with leading zero if needed
+            const [hours, minutes, seconds] = cleanStr.split(":");
+            return `${hours.padStart(2, "0")}:${minutes}:${seconds}`;
+          }
+
+          return cleanStr;
+        };
+
+        // Helper function to convert string decimal values to actual numbers
+        const parseDecimalValue = (value) => {
+          if (!value) return null;
+
+          const numValue = parseFloat(value);
+          return isNaN(numValue) ? null : numValue;
+        };
+
+        // Helper function to normalize boolean values
+        const normalizeBooleanValue = (value, defaultValue = false) => {
+          if (value === "TRUE" || value === "true" || value === true) {
+            return true;
+          } else if (
+            value === "FALSE" ||
+            value === "false" ||
+            value === false
+          ) {
+            return false;
+          }
+          return defaultValue;
+        };
 
         // Process each attendance management row starting from index 2 (skipping header rows)
         for (
@@ -3372,143 +3816,127 @@ class ETLService {
           if (!createdAttendanceSettings[id]) {
             createdAttendanceSettings[id] = true;
 
-            // Convert boolean fields
-            let geoFencingEnabled = attendanceDataMap.geo_fencing_enabled;
-            if (geoFencingEnabled === "TRUE" || geoFencingEnabled === true) {
-              geoFencingEnabled = true;
-            } else if (
-              geoFencingEnabled === "FALSE" ||
-              geoFencingEnabled === false
-            ) {
-              geoFencingEnabled = false;
-            } else {
-              geoFencingEnabled = false;
-            }
-
-            let overtimePolicyEnabled =
-              attendanceDataMap.overtime_policy_enabled;
-            if (
-              overtimePolicyEnabled === "TRUE" ||
-              overtimePolicyEnabled === true
-            ) {
-              overtimePolicyEnabled = true;
-            } else if (
-              overtimePolicyEnabled === "FALSE" ||
-              overtimePolicyEnabled === false
-            ) {
-              overtimePolicyEnabled = false;
-            } else {
-              overtimePolicyEnabled = false;
-            }
-
-            let autoCheckoutEnabled = attendanceDataMap.auto_checkout_enabled;
-            if (
-              autoCheckoutEnabled === "TRUE" ||
-              autoCheckoutEnabled === true
-            ) {
-              autoCheckoutEnabled = true;
-            } else if (
-              autoCheckoutEnabled === "FALSE" ||
-              autoCheckoutEnabled === false
-            ) {
-              autoCheckoutEnabled = false;
-            } else {
-              autoCheckoutEnabled = false;
-            }
-
-            let regularizationAllowed =
-              attendanceDataMap.regularization_allowed;
-            if (
-              regularizationAllowed === "TRUE" ||
-              regularizationAllowed === true
-            ) {
-              regularizationAllowed = true;
-            } else if (
-              regularizationAllowed === "FALSE" ||
-              regularizationAllowed === false
-            ) {
-              regularizationAllowed = false;
-            } else {
-              regularizationAllowed = true;
-            }
+            // Convert boolean fields using the helper function
+            const geoFencingEnabled = normalizeBooleanValue(
+              attendanceDataMap.geo_fencing_enabled
+            );
+            const overtimePolicyEnabled = normalizeBooleanValue(
+              attendanceDataMap.overtime_policy_enabled
+            );
+            const autoCheckoutEnabled = normalizeBooleanValue(
+              attendanceDataMap.auto_checkout_enabled
+            );
+            const regularizationAllowed = normalizeBooleanValue(
+              attendanceDataMap.regularization_allowed,
+              true
+            );
 
             // Convert numeric fields
-            const geoFenceRadius =
-              parseInt(attendanceDataMap.geo_fence_radius) || null;
-            const gracePeriodMinutes =
-              parseInt(attendanceDataMap.grace_period_minutes) || null;
-            const halfDayHours =
-              parseInt(attendanceDataMap.half_day_hours) || null;
-            const fullDayHours =
-              parseFloat(attendanceDataMap.full_day_hours) || null;
+            const geoFenceRadius = attendanceDataMap.geo_fence_radius
+              ? parseInt(attendanceDataMap.geo_fence_radius)
+              : null;
+            const gracePeriodMinutes = attendanceDataMap.grace_period_minutes
+              ? parseInt(attendanceDataMap.grace_period_minutes)
+              : 0;
+            const halfDayHours = parseDecimalValue(
+              attendanceDataMap.half_day_hours
+            );
+            const fullDayHours = parseDecimalValue(
+              attendanceDataMap.full_day_hours
+            );
             const breakDurationMinutes =
-              parseInt(attendanceDataMap.break_duration_minutes) || null;
-            const workDaysPerWeek =
-              parseInt(attendanceDataMap.work_days_per_week) || null;
+              attendanceDataMap.break_duration_minutes
+                ? parseInt(attendanceDataMap.break_duration_minutes)
+                : 60;
+            const workDaysPerWeek = attendanceDataMap.work_days_per_week
+              ? parseInt(attendanceDataMap.work_days_per_week)
+              : 5;
             const minimumOvertimeMinutes =
-              parseInt(attendanceDataMap.minimum_overtime_minutes) || null;
+              attendanceDataMap.minimum_overtime_minutes
+                ? parseInt(attendanceDataMap.minimum_overtime_minutes)
+                : null;
             const maxOvertimeHoursMonthly =
-              parseInt(attendanceDataMap.max_overtime_hours_monthly) || null;
+              attendanceDataMap.max_overtime_hours_monthly
+                ? parseInt(attendanceDataMap.max_overtime_hours_monthly)
+                : null;
             const regularizationWindowDays =
-              parseInt(attendanceDataMap.regularization_window_days) || null;
+              attendanceDataMap.regularization_window_days
+                ? parseInt(attendanceDataMap.regularization_window_days)
+                : 7;
             const regularizationLimitMonthly =
-              parseInt(attendanceDataMap.regularization_limit_monthly) || null;
+              attendanceDataMap.regularization_limit_monthly
+                ? parseInt(attendanceDataMap.regularization_limit_monthly)
+                : 3;
             const weekendOvertimeMultiplier =
-              parseFloat(attendanceDataMap.weekend_overtime_multiplier) || null;
+              parseDecimalValue(
+                attendanceDataMap.weekend_overtime_multiplier
+              ) || 2.0;
             const holidayOvertimeMultiplier =
-              parseFloat(attendanceDataMap.holiday_overtime_multiplier) || null;
-            const flexibleHours =
-              parseInt(attendanceDataMap.flexible_hours) || null;
+              parseDecimalValue(
+                attendanceDataMap.holiday_overtime_multiplier
+              ) || 2.0;
+            const flexibleHours = attendanceDataMap.flexible_hours
+              ? parseInt(attendanceDataMap.flexible_hours)
+              : null;
 
-            // Create attendance setting object
+            // Format time values
+            const shiftStartTime = formatTimeValue(
+              attendanceDataMap.shift_start_time
+            );
+            const shiftEndTime = formatTimeValue(
+              attendanceDataMap.shift_end_time
+            );
+            const autoCheckoutTime = formatTimeValue(
+              attendanceDataMap.auto_checkout_time
+            );
+
+            // Create attendance setting object with correct field names
             const attendanceSettingObj = {
               id: id,
               organizationId: orgId,
               moduleId: moduleId,
-              // captureMethods: attendanceDataMap.capture_method || "",
               captureMethods: attendanceDataMap.capture_method
                 ? JSON.parse(
                     attendanceDataMap.capture_method.replace(/'/g, '"')
                   )
-                : [],
+                : ["web_app"],
               geoFencingEnabled: geoFencingEnabled,
               geoFenceRadius: geoFenceRadius,
-              shiftType: attendanceDataMap.shift_type || "",
-              shift_start_time: attendanceDataMap.shift_start_time
-                ? attendanceDataMap.shift_start_time.replace("t", "T")
-                : null,
-
-              shift_end_time: attendanceDataMap.shift_end_time
-                ? attendanceDataMap.shift_end_time.replace("t", "T")
-                : null,
-
+              shiftType: attendanceDataMap.shift_type || "fixed",
+              shiftStartTime: shiftStartTime,
+              shiftEndTime: shiftEndTime,
               flexibleHours: flexibleHours,
-              grace_period_minutes: gracePeriodMinutes,
-              halfDayHours: halfDayHours,
-              fullDayHours: fullDayHours,
+              gracePeriodMinutes: gracePeriodMinutes,
+              halfDayHours: parseFloat(halfDayHours).toFixed(2),
+              fullDayHours: parseFloat(fullDayHours).toFixed(2),
               breakDurationMinutes: breakDurationMinutes,
               workDaysPerWeek: workDaysPerWeek,
               overtimePolicyEnabled: overtimePolicyEnabled,
               minimumOvertimeMinutes: minimumOvertimeMinutes,
-              overtime_calculation_type:
+              overtimeCalculationType:
                 attendanceDataMap.overtime_calculation_type || null,
               maxOvertimeHoursMonthly: maxOvertimeHoursMonthly,
-              latePenaltyType: attendanceDataMap.late_penalty_type || "",
-              late_penalty_leave_type:
+              latePenaltyType: attendanceDataMap.late_penalty_type || "none",
+              latePenaltyLeaveType:
                 attendanceDataMap.late_penalty_leave_type || null,
-              missing_swipe_policy:
-                attendanceDataMap.missing_swipte_policy || "", // Note: there's a typo in the field name
+              missingSwipePolicy:
+                attendanceDataMap.missing_swipte_policy || null,
               autoCheckoutEnabled: autoCheckoutEnabled,
-              auto_checkout_time: attendanceDataMap.auto_checkout_time || null,
+              autoCheckoutTime: autoCheckoutTime,
               regularizationAllowed: regularizationAllowed,
-              regularization_window_days: regularizationWindowDays,
-              regularization_limit_monthly: regularizationLimitMonthly,
-              weekendOvertimeMultiplier: weekendOvertimeMultiplier,
-              holidayOvertimeMultiplier: holidayOvertimeMultiplier,
-              created_by: createdById,
-              updated_by: updatedById,
-              created_at: currentDateTime,
-              updated_at: currentDateTime,
+              regularizationWindowDays: regularizationWindowDays,
+              regularizationLimitMonthly: regularizationLimitMonthly,
+              weekendOvertimeMultiplier: parseFloat(
+                weekendOvertimeMultiplier
+              ).toFixed(2),
+              holidayOvertimeMultiplier: parseFloat(
+                holidayOvertimeMultiplier
+              ).toFixed(2),
+              status: "active",
+              createdAt: currentDateTime,
+              updatedAt: currentDateTime,
+              createdBy: createdById || null,
+              updatedBy: updatedById || null,
             };
 
             // Debug log to verify the object has all required fields
@@ -3521,16 +3949,422 @@ class ETLService {
           }
         }
       }
-
       // Process shift_setting sheet if it exists
-      if (data.shift_setting && data.shift_setting.length >= 3) {
-        // Headers are in the second row (index 1)
-        const headers = data.shift_setting[1];
+      // if (data.shift_setting && data.shift_setting.length >= 3) {
+      //   // Headers are in the second row (index 1)
+      //   const headers = data.shift_setting[1];
 
-        // Track created shift configurations to avoid duplicates
+      //   // Track created shift configurations to avoid duplicates
+      //   const createdShiftConfigurations = {};
+
+      //   // Process each shift setting row starting from index 2 (skipping header rows)
+      //   for (
+      //     let rowIndex = 2;
+      //     rowIndex < data.shift_setting.length;
+      //     rowIndex++
+      //   ) {
+      //     const shiftData = data.shift_setting[rowIndex];
+
+      //     // Create a map of header to value for easier access
+      //     const shiftDataMap = {};
+      //     headers.forEach((header, index) => {
+      //       if (header) {
+      //         shiftDataMap[header] = shiftData[index];
+      //       }
+      //     });
+
+      //     // Skip if required fields are missing
+      //     if (!shiftDataMap.shift_name || !shiftDataMap.shift_type) continue;
+
+      //     // Generate unique IDs
+      //     const shiftId = generateDeterministicUUID(
+      //       shiftDataMap.shift_name || "",
+      //       shiftDataMap.shift_type || ""
+      //     );
+
+      //     const orgId = generateDeterministicUUID(
+      //       shiftDataMap.auth_signatory_designation || "",
+      //       shiftDataMap.cin || ""
+      //     );
+
+      //     const createdById = generateDeterministicUUID(
+      //       shiftDataMap.created_by_emp_number || "",
+      //       shiftDataMap.created_by_emp_first_name || ""
+      //     );
+
+      //     const updatedById = generateDeterministicUUID(
+      //       shiftDataMap.updated_by_emp_number || "",
+      //       shiftDataMap.updated_by_emp_first_name || ""
+      //     );
+
+      //     // Check if this shift configuration has been processed already
+      //     if (!createdShiftConfigurations[shiftId]) {
+      //       createdShiftConfigurations[shiftId] = true;
+
+      //       // Convert numeric fields
+      //       const flexibleHours = parseInt(shiftDataMap.flexible_hours) || 0;
+      //       const breakDuration = parseInt(shiftDataMap.break_duration) || null;
+      //       const gracePeriodMinutes =
+      //         parseInt(shiftDataMap.grace_period_minutes) || null;
+      //       // const halfDayHours =
+      //       //   parseFloat(shiftDataMap.half_day_hours) || null;
+      //       // const fullDayHours =
+      //       //   parseFloat(shiftDataMap.full_day_hours) || null;
+      //       // date_of_birth: this.convertToISOString(empDataMap.date_of_birth)
+      //       // let maxValue = componentDataMap.max_value;
+      //       // maxValue =
+      //       //   maxValue && maxValue !== "null"
+      //       //     ? parseFloat(maxValue).toFixed(2)
+      //       //     : null;
+      //       let halfDayHours = shiftDataMap.half_day_hours;
+      //       halfDayHours =
+      //         halfDayHours != "null"
+      //           ? parseFloat(halfDayHours).toFixed(2)
+      //           : null;
+      //       let fullDayHours = shiftDataMap.full_day_hours;
+      //       fullDayHours =
+      //         fullDayHours != "null"
+      //           ? parseFloat(fullDayHours).toFixed(2)
+      //           : null;
+      //       const StartTime = shiftDataMap.start_time.replace("t", "T");
+      //       const EndTime = shiftDataMap.end_time.replace("t", "T");
+      //       // Create shift configuration object
+      //       const shiftConfigurationObj = {
+      //         shift_id: shiftId,
+      //         org_id: orgId,
+      //         shift_name: shiftDataMap.shift_name || "",
+      //         shift_type: shiftDataMap.shift_type || "",
+      //         // start_time: shiftDataMap.start_time
+      //         //   ? this.convertToTimeOnly(shiftDataMap.start_time)
+      //         //   : null,
+      //         // end_time: shiftDataMap.end_time
+      //         //   ? this.convertToTimeOnly(shiftDataMap.end_time)
+      //         //   : null,
+      //         start_time: StartTime ? StartTime.split("T")[1] : null,
+      //         end_time: EndTime ? EndTime.split("T")[1] : null,
+      //         flexible_hours: flexibleHours,
+      //         break_duration: breakDuration,
+      //         grace_period_minutes: gracePeriodMinutes,
+      //         half_day_hours: halfDayHours,
+      //         full_day_hours: fullDayHours,
+      //         description: shiftDataMap.description || "",
+      //         status: "active", // Default status as active
+      //         created_by: createdById,
+      //         updated_by: updatedById,
+      //         created_at: currentDateTime,
+      //         updated_at: currentDateTime,
+      //       };
+
+      //       // Debug log to verify the object has all required fields
+      //       console.log(
+      //         "Shift Configuration Object:",
+      //         JSON.stringify(shiftConfigurationObj, null, 2)
+      //       );
+
+      //       transformedData.push(shiftConfigurationObj);
+      //     }
+      //   }
+      // }
+      // if (data.shift_setting && data.shift_setting.length >= 3) {
+      //   const headers = data.shift_setting[1];
+      //   const createdShiftConfigurations = {};
+
+      //   // Helper function to safely extract time (handles different formats)
+      //   const extractTime = (dateTimeStr) => {
+      //     if (!dateTimeStr) return null;
+
+      //     const cleanStr = dateTimeStr.trim().replace("t", "T"); // Fix lowercase "t"
+
+      //     if (cleanStr.includes("T")) {
+      //       const timePart = cleanStr.split("T")[1]; // Extract time part
+
+      //       // Ensure time is properly formatted (HH:mm:ss)
+      //       return timePart.match(/^\d{1,2}:\d{2}:\d{2}$/) ? timePart : null;
+      //     }
+
+      //     // If already in HH:mm:ss format, return as is
+      //     return cleanStr.match(/^\d{1,2}:\d{2}:\d{2}$/) ? cleanStr : null;
+      //   };
+
+      //   for (
+      //     let rowIndex = 2;
+      //     rowIndex < data.shift_setting.length;
+      //     rowIndex++
+      //   ) {
+      //     const shiftData = data.shift_setting[rowIndex];
+
+      //     const shiftDataMap = {};
+      //     headers.forEach((header, index) => {
+      //       if (header) {
+      //         shiftDataMap[header] = shiftData[index];
+      //       }
+      //     });
+
+      //     if (!shiftDataMap.shift_name || !shiftDataMap.shift_type) continue;
+
+      //     const shiftId = generateDeterministicUUID(
+      //       shiftDataMap.shift_name || "",
+      //       shiftDataMap.shift_type || ""
+      //     );
+
+      //     const orgId = generateDeterministicUUID(
+      //       shiftDataMap.auth_signatory_designation || "",
+      //       shiftDataMap.cin || ""
+      //     );
+
+      //     const createdById = generateDeterministicUUID(
+      //       shiftDataMap.created_by_emp_number || "",
+      //       shiftDataMap.created_by_emp_first_name || ""
+      //     );
+
+      //     const updatedById = generateDeterministicUUID(
+      //       shiftDataMap.updated_by_emp_number || "",
+      //       shiftDataMap.updated_by_emp_first_name || ""
+      //     );
+
+      //     if (!createdShiftConfigurations[shiftId]) {
+      //       createdShiftConfigurations[shiftId] = true;
+
+      //       const flexibleHours = parseInt(shiftDataMap.flexible_hours) || 0;
+      //       const breakDuration = parseInt(shiftDataMap.break_duration) || null;
+      //       const gracePeriodMinutes =
+      //         parseInt(shiftDataMap.grace_period_minutes) || null;
+
+      //       let halfDayHours = shiftDataMap.half_day_hours;
+      //       halfDayHours =
+      //         halfDayHours && halfDayHours !== "null"
+      //           ? parseFloat(halfDayHours).toFixed(2)
+      //           : null;
+
+      //       let fullDayHours = shiftDataMap.full_day_hours;
+      //       fullDayHours =
+      //         fullDayHours && fullDayHours !== "null"
+      //           ? parseFloat(fullDayHours).toFixed(2)
+      //           : null;
+
+      //       const startTime = extractTime(shiftDataMap.start_time);
+      //       const endTime = extractTime(shiftDataMap.end_time);
+
+      //       console.log(
+      //         "Extracted Start Time:",
+      //         shiftDataMap.start_time,
+      //         "=>",
+      //         startTime
+      //       );
+      //       console.log(
+      //         "Extracted End Time:",
+      //         shiftDataMap.end_time,
+      //         "=>",
+      //         endTime
+      //       );
+
+      //       const shiftConfigurationObj = {
+      //         shift_id: shiftId,
+      //         org_id: orgId,
+      //         shift_name: shiftDataMap.shift_name || "",
+      //         shift_type: shiftDataMap.shift_type || "",
+      //         start_time: startTime,
+      //         end_time: endTime,
+      //         flexible_hours: flexibleHours,
+      //         break_duration: breakDuration,
+      //         grace_period_minutes: gracePeriodMinutes,
+      //         half_day_hours: halfDayHours,
+      //         full_day_hours: fullDayHours,
+      //         description: shiftDataMap.description || "",
+      //         status: "active",
+      //         created_by: createdById,
+      //         updated_by: updatedById,
+      //         created_at: currentDateTime,
+      //         updated_at: currentDateTime,
+      //       };
+
+      //       console.log(
+      //         "Shift Configuration Object:",
+      //         JSON.stringify(shiftConfigurationObj, null, 2)
+      //       );
+
+      //       transformedData.push(shiftConfigurationObj);
+      //     }
+      //   }
+      // }
+      // if (data.shift_setting && data.shift_setting.length >= 3) {
+      //   const headers = data.shift_setting[1];
+      //   const createdShiftConfigurations = {};
+
+      //   // Helper function to extract and format time properly
+      //   const extractTime = (dateTimeStr) => {
+      //     if (!dateTimeStr) return null;
+
+      //     const cleanStr = dateTimeStr.trim().replace("t", "T"); // Fix lowercase "t"
+
+      //     if (cleanStr.includes("T")) {
+      //       const timePart = cleanStr.split("T")[1]; // Extract time part
+      //       return timePart.padStart(8, "0"); // Ensure HH:mm:ss format
+      //     }
+
+      //     return cleanStr.padStart(8, "0").match(/^\d{1,2}:\d{2}:\d{2}$/)
+      //       ? cleanStr
+      //       : null;
+      //   };
+
+      //   for (
+      //     let rowIndex = 2;
+      //     rowIndex < data.shift_setting.length;
+      //     rowIndex++
+      //   ) {
+      //     const shiftData = data.shift_setting[rowIndex];
+
+      //     const shiftDataMap = {};
+      //     headers.forEach((header, index) => {
+      //       if (header) {
+      //         shiftDataMap[header] = shiftData[index];
+      //       }
+      //     });
+
+      //     if (!shiftDataMap.shift_name || !shiftDataMap.shift_type) continue;
+
+      //     const shiftId = generateDeterministicUUID(
+      //       shiftDataMap.shift_name,
+      //       shiftDataMap.shift_type
+      //     );
+      //     const orgId = generateDeterministicUUID(
+      //       shiftDataMap.auth_signatory_designation,
+      //       shiftDataMap.cin
+      //     );
+      //     const createdById = generateDeterministicUUID(
+      //       shiftDataMap.created_by_emp_number,
+      //       shiftDataMap.created_by_emp_first_name
+      //     );
+      //     const updatedById = generateDeterministicUUID(
+      //       shiftDataMap.updated_by_emp_number,
+      //       shiftDataMap.updated_by_emp_first_name
+      //     );
+
+      //     if (!createdShiftConfigurations[shiftId]) {
+      //       createdShiftConfigurations[shiftId] = true;
+
+      //       const flexibleHours = isNaN(parseInt(shiftDataMap.flexible_hours))
+      //         ? null
+      //         : parseInt(shiftDataMap.flexible_hours);
+      //       const breakDuration = isNaN(parseInt(shiftDataMap.break_duration))
+      //         ? null
+      //         : parseInt(shiftDataMap.break_duration);
+      //       const gracePeriodMinutes = isNaN(
+      //         parseInt(shiftDataMap.grace_period_minutes)
+      //       )
+      //         ? null
+      //         : parseInt(shiftDataMap.grace_period_minutes);
+
+      //       let halfDayHours = parseFloat(shiftDataMap.half_day_hours);
+      //       halfDayHours = isNaN(halfDayHours) ? null : halfDayHours;
+
+      //       let fullDayHours = parseFloat(shiftDataMap.full_day_hours);
+      //       fullDayHours = isNaN(fullDayHours) ? null : fullDayHours;
+
+      //       const startTime = extractTime(shiftDataMap.start_time);
+      //       const endTime = extractTime(shiftDataMap.end_time);
+
+      //       console.log(
+      //         "Extracted Start Time:",
+      //         shiftDataMap.start_time,
+      //         "=>",
+      //         startTime
+      //       );
+      //       console.log(
+      //         "Extracted End Time:",
+      //         shiftDataMap.end_time,
+      //         "=>",
+      //         endTime
+      //       );
+
+      //       const shiftConfigurationObj = {
+      //         shift_id: shiftId,
+      //         org_id: orgId,
+      //         shift_name: shiftDataMap.shift_name || "",
+      //         shift_type: shiftDataMap.shift_type || "",
+      //         start_time: startTime,
+      //         end_time: endTime,
+      //         flexible_hours: flexibleHours,
+      //         break_duration: breakDuration,
+      //         grace_period_minutes: gracePeriodMinutes,
+      //         half_day_hours: halfDayHours,
+      //         full_day_hours: fullDayHours,
+      //         description: shiftDataMap.description || "",
+      //         status: "active",
+      //         created_by: createdById,
+      //         updated_by: updatedById,
+      //         created_at: currentDateTime,
+      //         updated_at: currentDateTime,
+      //       };
+
+      //       console.log(
+      //         "Shift Configuration Object:",
+      //         JSON.stringify(shiftConfigurationObj, null, 2)
+      //       );
+
+      //       transformedData.push(shiftConfigurationObj);
+      //     }
+      //   }
+      // }
+      if (data.shift_setting && data.shift_setting.length >= 3) {
+        const headers = data.shift_setting[1];
         const createdShiftConfigurations = {};
 
-        // Process each shift setting row starting from index 2 (skipping header rows)
+        // Helper function to extract and properly format time to HH:mm:ss
+        const extractTime = (dateTimeStr) => {
+          if (!dateTimeStr) return null;
+
+          const cleanStr = dateTimeStr.toString().trim().replace("t", "T"); // Fix lowercase "t"
+
+          // Extract time part if datetime format
+          if (cleanStr.includes("T")) {
+            const timePart = cleanStr.split("T")[1];
+            return formatTo24HourTime(timePart);
+          }
+
+          // Handle direct time input
+          return formatTo24HourTime(cleanStr);
+        };
+
+        // Helper function to ensure time is in 24-hour HH:mm:ss format
+        const formatTo24HourTime = (timeStr) => {
+          // Remove any surrounding quotes
+          timeStr = timeStr.replace(/^["']|["']$/g, "");
+
+          // Split into components
+          let [hours, minutes, seconds] = timeStr
+            .split(":")
+            .map((part) => part.trim());
+
+          // Ensure all parts exist
+          hours = hours || "00";
+          minutes = minutes || "00";
+          seconds = seconds || "00";
+
+          // Pad with leading zeros
+          hours = hours.padStart(2, "0");
+          minutes = minutes.padStart(2, "0");
+          seconds = seconds.padStart(2, "0");
+
+          return `${hours}:${minutes}:${seconds}`;
+        };
+
+        // Function to convert decimal string to number
+        const parseDecimal = (value) => {
+          if (!value) return null;
+
+          // Remove any quotes and convert to number
+          const numValue = parseFloat(
+            value.toString().replace(/^["']|["']$/g, "")
+          );
+
+          // Return null if not a valid number
+          if (isNaN(numValue)) return null;
+
+          // Return as a number with 2 decimal places
+          return parseFloat(numValue.toFixed(2));
+        };
+
         for (
           let rowIndex = 2;
           rowIndex < data.shift_setting.length;
@@ -3538,7 +4372,6 @@ class ETLService {
         ) {
           const shiftData = data.shift_setting[rowIndex];
 
-          // Create a map of header to value for easier access
           const shiftDataMap = {};
           headers.forEach((header, index) => {
             if (header) {
@@ -3546,70 +4379,81 @@ class ETLService {
             }
           });
 
-          // Skip if required fields are missing
           if (!shiftDataMap.shift_name || !shiftDataMap.shift_type) continue;
 
-          // Generate unique IDs
           const shiftId = generateDeterministicUUID(
-            shiftDataMap.shift_name || "",
-            shiftDataMap.shift_type || ""
+            shiftDataMap.shift_name,
+            shiftDataMap.shift_type
           );
-
           const orgId = generateDeterministicUUID(
-            shiftDataMap.auth_signatory_designation || "",
-            shiftDataMap.cin || ""
+            shiftDataMap.auth_signatory_designation,
+            shiftDataMap.cin
           );
-
           const createdById = generateDeterministicUUID(
-            shiftDataMap.created_by_emp_number || "",
-            shiftDataMap.created_by_emp_first_name || ""
+            shiftDataMap.created_by_emp_number,
+            shiftDataMap.created_by_emp_first_name
           );
-
           const updatedById = generateDeterministicUUID(
-            shiftDataMap.updated_by_emp_number || "",
-            shiftDataMap.updated_by_emp_first_name || ""
+            shiftDataMap.updated_by_emp_number,
+            shiftDataMap.updated_by_emp_first_name
           );
 
-          // Check if this shift configuration has been processed already
           if (!createdShiftConfigurations[shiftId]) {
             createdShiftConfigurations[shiftId] = true;
 
-            // Convert numeric fields
-            const flexibleHours = parseInt(shiftDataMap.flexible_hours) || 0;
-            const breakDuration = parseInt(shiftDataMap.break_duration) || null;
-            const gracePeriodMinutes =
-              parseInt(shiftDataMap.grace_period_minutes) || null;
-            const halfDayHours =
-              parseFloat(shiftDataMap.half_day_hours) || null;
-            const fullDayHours =
-              parseFloat(shiftDataMap.full_day_hours) || null;
+            const flexibleHours = isNaN(parseInt(shiftDataMap.flexible_hours))
+              ? null
+              : parseInt(shiftDataMap.flexible_hours);
+            const breakDuration = isNaN(parseInt(shiftDataMap.break_duration))
+              ? null
+              : parseInt(shiftDataMap.break_duration);
+            const gracePeriodMinutes = isNaN(
+              parseInt(shiftDataMap.grace_period_minutes)
+            )
+              ? null
+              : parseInt(shiftDataMap.grace_period_minutes);
 
-            // Create shift configuration object
+            // Parse decimal values correctly
+            const halfDayHours = parseDecimal(shiftDataMap.half_day_hours);
+            const fullDayHours = parseDecimal(shiftDataMap.full_day_hours);
+
+            // Format time values properly
+            const startTime = extractTime(shiftDataMap.start_time);
+            const endTime = extractTime(shiftDataMap.end_time);
+
+            console.log(
+              "Extracted Start Time:",
+              shiftDataMap.start_time,
+              "=>",
+              startTime
+            );
+            console.log(
+              "Extracted End Time:",
+              shiftDataMap.end_time,
+              "=>",
+              endTime
+            );
+
             const shiftConfigurationObj = {
               shift_id: shiftId,
               org_id: orgId,
               shift_name: shiftDataMap.shift_name || "",
               shift_type: shiftDataMap.shift_type || "",
-              start_time: shiftDataMap.start_time
-                ? shiftDataMap.start_time.replace("t", "T")
-                : null,
-              end_time: shiftDataMap.end_time
-                ? shiftDataMap.end_time.replace("t", "T")
-                : null,
+              start_time: startTime, // Now properly formatted as HH:mm:ss
+              end_time: endTime, // Now properly formatted as HH:mm:ss
               flexible_hours: flexibleHours,
               break_duration: breakDuration,
               grace_period_minutes: gracePeriodMinutes,
-              half_day_hours: halfDayHours,
-              full_day_hours: fullDayHours,
+              half_day_hours: parseFloat(halfDayHours).toFixed(2), // Now a number, not a string
+              full_day_hours: parseFloat(fullDayHours).toFixed(2), // Now a number, not a string
               description: shiftDataMap.description || "",
-              status: "active", // Default status as active
+              status: "active",
               created_by: createdById,
               updated_by: updatedById,
               created_at: currentDateTime,
               updated_at: currentDateTime,
             };
 
-            // Debug log to verify the object has all required fields
             console.log(
               "Shift Configuration Object:",
               JSON.stringify(shiftConfigurationObj, null, 2)
@@ -3619,7 +4463,6 @@ class ETLService {
           }
         }
       }
-
       // Process emp_shift_assignment sheet if it exists
       if (data.emp_shift_assignment && data.emp_shift_assignment.length >= 3) {
         // Headers are in the second row (index 1)

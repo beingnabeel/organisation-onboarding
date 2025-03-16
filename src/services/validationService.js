@@ -1239,11 +1239,11 @@ class ValidationService {
           errors.push("total_net_pay must be a non-negative decimal.");
         }
 
-        if (data.total_net_pay !== data.total_gross - data.total_deductions) {
-          errors.push(
-            "total_net_pay must be equal to total_gross minus total_deductions."
-          );
-        }
+        // if (data.total_net_pay !== data.total_gross - data.total_deductions) {
+        //   errors.push(
+        //     "total_net_pay must be equal to total_gross minus total_deductions."
+        //   );
+        // }
 
         const validStatuses = [
           "draft",
@@ -1943,13 +1943,13 @@ class ValidationService {
         }
 
         // start_time and end_time validation (should be valid date-time format)
-        const dateTimeRegex =
-          /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/; // YYYY-MM-DDTHH:MM:SS format
-        ["start_time", "end_time"].forEach((field) => {
-          if (data[field] && !dateTimeRegex.test(data[field])) {
-            errors.push(`${field} must be in YYYY-MM-DDTHH:MM:SS format.`);
-          }
-        });
+        // const dateTimeRegex =
+        //   /^\d{4}-\d{2}-\d{2}T([01]\d|2[0-3]):([0-5]\d):([0-5]\d)$/; // YYYY-MM-DDTHH:MM:SS format
+        // ["start_time", "end_time"].forEach((field) => {
+        //   if (data[field] && !dateTimeRegex.test(data[field])) {
+        //     errors.push(`${field} must be in YYYY-MM-DDTHH:MM:SS format.`);
+        //   }
+        // });
 
         // flexible_hours should be a positive integer if provided
         if (data.flexible_hours !== undefined && data.flexible_hours < 0) {
@@ -2171,7 +2171,7 @@ class ValidationService {
         }
 
         // Enum validation for half_day_type (if provided)
-        const validHalfDayTypes = ["first_half", "second_half"];
+        const validHalfDayTypes = ["first_half", "second_half", "none"];
         if (
           data.half_day_type &&
           !validHalfDayTypes.includes(data.half_day_type)

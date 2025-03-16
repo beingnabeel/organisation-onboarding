@@ -1,1 +1,836 @@
-[]
+[
+  {
+    "data": {
+      "org_compliance_id": "25a9963e-74a3-529b-abcf-36805996241c",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "compliance_code": "it2024br",
+      "pf_establishment_id": "5041100",
+      "pf_number": "brptn50411001117654321",
+      "pf_registration_date": "2022-10-01T18:29:50.000Z",
+      "esi_number": "31001234560000000",
+      "esi_registration_date": "2022-10-02T18:29:50.000Z",
+      "pt_establishment_id": "brptn123456789",
+      "pt_number": "brptn123456790",
+      "pt_registration_date": "2022-10-03T18:29:50.000Z",
+      "lwf_establishment_id": "brlwf456789",
+      "lwf_registration_date": "2022-10-11T18:29:50.000Z",
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert OrganizationComplianceDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:26.852Z"
+  },
+  {
+    "data": {
+      "location_id": "b72133aa-0c3e-545a-84cd-4c2a11d91e4e",
+      "organizationId": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "location_name": "patna",
+      "location_code": "pat02",
+      "is_head_office": false,
+      "is_registered_office": false,
+      "is_branch": true,
+      "address_line1": "boaring road",
+      "address_line2": "near sai mandir spti building",
+      "locality": "",
+      "city": "patna",
+      "country_id": "b3410648-7b7d-582d-b17b-9a8e73645025",
+      "state_id": "39d12fce-6980-520e-83e6-75effd144054",
+      "pincode": "800002",
+      "email": "nabeelhassan17808@gmail.com",
+      "phone": "",
+      "gstin": "",
+      "timezone": "asia/kolkata",
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert OrganizationLocation after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:33.098Z"
+  },
+  {
+    "data": {
+      "dept_id": "caa2a350-b332-5714-9c86-74336350e9f5",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "dept_type_id": "fc75c55a-0ca1-5520-b16f-7261fd341be0",
+      "dept_code": "it001",
+      "dept_name": "software development",
+      "parent_dept_id": "85e8e0bb-2167-5292-ac12-721440747a7a",
+      "cost_center_code": "cc104",
+      "description": "application development",
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert Department after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:38.074Z"
+  },
+  {
+    "data": {
+      "dept_id": "85e8e0bb-2167-5292-ac12-721440747a7a",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "dept_type_id": "76286ad2-1b8f-544f-b4f4-f746ef5c8bdc",
+      "dept_code": "it002",
+      "dept_name": "information technology",
+      "parent_dept_id": null,
+      "cost_center_code": "cc103",
+      "description": "it infrastructure & support",
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert Department after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:42.092Z"
+  },
+  {
+    "data": {
+      "employment_type_id": "7d7fa406-e7d8-566d-8f2f-fd7199755fb9",
+      "type_name": "consultant",
+      "type_code": "pt01",
+      "description": "part-time employment",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert DepartmentType after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:46.942Z"
+  },
+  {
+    "data": {
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "employee_number": "kl000041",
+      "employment_type_id": "0cc95bb2-8ee6-518f-8c0a-eae8370cda0f",
+      "dept_id": "caa2a350-b332-5714-9c86-74336350e9f5",
+      "work_location_id": "973e7510-3b4f-543e-98b1-170895493d0c",
+      "job_title_id": "eb41eb4a-d193-5678-823e-ae88e968a9ba",
+      "title": "mr",
+      "first_name": "nabeel",
+      "middle_name": null,
+      "last_name": "hassan",
+      "display_name": "nabeel hassan",
+      "date_of_birth": "2001-02-28T18:29:50.000Z",
+      "gender": "male",
+      "official_email": "nabeel.hassan@kibalabs.in",
+      "personal_email": "sk.hassan2013@gmail.com",
+      "mobile_number": "9852369870",
+      "emergency_contact_name": "hassan nabeel",
+      "emergency_contact_relationship": "himself",
+      "emergency_contact_number": "9608020606",
+      "date_joined": "2024-10-13T18:29:50.000Z",
+      "probation_end_date": "2025-03-13T18:29:50.000Z",
+      "confirmation_date": "2025-03-14T18:29:50.000Z",
+      "contract_end_date": null,
+      "reporting_manager_id": null,
+      "notice_period_days": 60,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert Employee after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:52.690Z"
+  },
+  {
+    "data": {
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "employee_number": "kl000040",
+      "employment_type_id": "7d7fa406-e7d8-566d-8f2f-fd7199755fb9",
+      "dept_id": "caa2a350-b332-5714-9c86-74336350e9f5",
+      "work_location_id": "973e7510-3b4f-543e-98b1-170895493d0c",
+      "job_title_id": "3bce484d-d2cb-5a30-b3a6-99d32f063d28",
+      "title": "mr",
+      "first_name": "sandeep",
+      "middle_name": null,
+      "last_name": "chaurasiya",
+      "display_name": "sandeep chaurasiya",
+      "date_of_birth": "1997-05-02T18:29:50.000Z",
+      "gender": "male",
+      "official_email": "sandeep.chaurasiya@kibalabs.in",
+      "personal_email": "sandeepchaurasiya@gmail.com",
+      "mobile_number": "9899559598",
+      "emergency_contact_name": "chaurasiya ji",
+      "emergency_contact_relationship": "father",
+      "emergency_contact_number": "9899559598",
+      "date_joined": "2024-01-09T18:29:50.000Z",
+      "probation_end_date": "2025-01-02T18:29:50.000Z",
+      "confirmation_date": "2025-02-02T18:29:50.000Z",
+      "contract_end_date": null,
+      "reporting_manager_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "notice_period_days": 60,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert Employee after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:12:57.469Z"
+  },
+  {
+    "data": {
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "employee_number": "kl000039",
+      "employment_type_id": "33ead9ab-07b7-5287-a0e6-db20e5f6ec37",
+      "dept_id": "85e8e0bb-2167-5292-ac12-721440747a7a",
+      "work_location_id": "b72133aa-0c3e-545a-84cd-4c2a11d91e4e",
+      "job_title_id": "6fb47bad-9416-50da-9e8f-ec591564121a",
+      "title": "mr",
+      "first_name": "neyaz",
+      "middle_name": null,
+      "last_name": "ahmad",
+      "display_name": "neyaz ahmad",
+      "date_of_birth": "1991-03-01T18:29:50.000Z",
+      "gender": "male",
+      "official_email": "neyaz.ahmad@kibalabs.in",
+      "personal_email": "neyazahmad@gmail.com",
+      "mobile_number": "9608020606",
+      "emergency_contact_name": "ahmad ji",
+      "emergency_contact_relationship": "father",
+      "emergency_contact_number": "9852369870",
+      "date_joined": "2022-01-09T18:29:50.000Z",
+      "probation_end_date": "2023-01-03T18:29:50.000Z",
+      "confirmation_date": "2023-02-03T18:29:50.000Z",
+      "contract_end_date": null,
+      "reporting_manager_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "notice_period_days": 60,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert Employee after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:02.178Z"
+  },
+  {
+    "data": {
+      "empl_personal_det_id": "75c1b54f-37fd-5573-8bdd-81cd77b06318",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "marital_status": "married",
+      "marriage_date": "2024-12-22T18:29:50.000Z",
+      "blood_group": "b+",
+      "nationality": "indian",
+      "physically_challenged": false,
+      "disability_details": null,
+      "father_name": "kiki",
+      "mother_name": "kaka",
+      "spouse_name": null,
+      "spouse_gender": "male",
+      "residence_number": "8964",
+      "social_media_handles": {
+        "instagram": "neyaz"
+      },
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeePersonalDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:06.195Z"
+  },
+  {
+    "data": {
+      "empl_personal_det_id": "b9912110-e2b6-5495-af93-9d07d0de5d60",
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "marital_status": "married",
+      "marriage_date": "2020-12-11T18:29:50.000Z",
+      "blood_group": "ab-",
+      "nationality": "indain",
+      "physically_challenged": true,
+      "disability_details": "lukemia",
+      "father_name": "mimi",
+      "mother_name": "mama",
+      "spouse_name": null,
+      "spouse_gender": "male",
+      "residence_number": "3245",
+      "social_media_handles": {
+        "instagram": "sandeep"
+      },
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeePersonalDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:10.431Z"
+  },
+  {
+    "data": {
+      "empl_personal_det_id": "d1305109-3a63-59b6-93a5-74841378830d",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "marital_status": "married",
+      "marriage_date": "2023-09-07T18:29:50.000Z",
+      "blood_group": "b+",
+      "nationality": "indain",
+      "physically_challenged": false,
+      "disability_details": null,
+      "father_name": "titi",
+      "mother_name": "tata",
+      "spouse_name": null,
+      "spouse_gender": "female",
+      "residence_number": "4435",
+      "social_media_handles": {
+        "instagram": "beingnabeel"
+      },
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeePersonalDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:14.455Z"
+  },
+  {
+    "data": {
+      "employee_bank_id": "efa25f3e-be01-5e5b-ae61-25025e5cb66b",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "bank_id": "36e70483-9493-5785-96a8-d9ecc08df8bb",
+      "account_number": "368821018",
+      "account_type": "salary",
+      "ifsc_code": "hdfc0000156",
+      "branch_name": "bailey road, patna",
+      "name_on_account": "neyaz ahmad",
+      "is_primary": true,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeBankDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:19.789Z"
+  },
+  {
+    "data": {
+      "empl_financial_id": "7a89a28e-524b-5c29-ab55-f9e972755666",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "compliance_id": "7f745f62-8ee3-5db3-aeaf-20c3c82f549b",
+      "employee_bank_id": "efa25f3e-be01-5e5b-ae61-25025e5cb66b",
+      "salary_payment_mode": "bank_transfer",
+      "pf_details_available": true,
+      "pf_number": "mamum00641480000001258",
+      "pf_joining_date": "2020-06-14T18:29:50.000Z",
+      "employee_contribution_to_pf": "12% of basic salary",
+      "uan": null,
+      "esi_details_available": true,
+      "esi_eligible": true,
+      "employer_esi_number": "31001234560000000",
+      "lwf_eligible": true,
+      "aadhar_number": "235646652334",
+      "dob_in_aadhar": "1999-03-01T18:29:50.000Z",
+      "full_name_in_aadhar": "neyaz ahmad",
+      "gender_in_aadhar": "male",
+      "pan_available": true,
+      "pan_number": "xyzwu1234e",
+      "full_name_in_pan": "neyaz ahmad",
+      "dob_in_pan": "1999-03-01T18:29:50.000Z",
+      "parents_name_in_pan": "ahmad",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeFinancialDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:24.091Z"
+  },
+  {
+    "data": {
+      "employee_bank_id": "b114369f-d4ee-5940-8f32-fd86a286795d",
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "bank_id": "36e70483-9493-5785-96a8-d9ecc08df8bb",
+      "account_number": "758833459",
+      "account_type": "salary",
+      "ifsc_code": "hdfc0000156",
+      "branch_name": "bailey road, patna",
+      "name_on_account": "sandeep chaurasiya",
+      "is_primary": true,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeBankDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:28.851Z"
+  },
+  {
+    "data": {
+      "empl_financial_id": "8acf7b0b-aeb0-5243-9fb6-ae5d607eb0a5",
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "compliance_id": "7f745f62-8ee3-5db3-aeaf-20c3c82f549b",
+      "employee_bank_id": "b114369f-d4ee-5940-8f32-fd86a286795d",
+      "salary_payment_mode": "bank_transfer",
+      "pf_details_available": true,
+      "pf_number": "mamum00641480000001270",
+      "pf_joining_date": "2021-07-11T18:29:50.000Z",
+      "employee_contribution_to_pf": "12% of basic salary",
+      "uan": null,
+      "esi_details_available": true,
+      "esi_eligible": true,
+      "employer_esi_number": "31001234560000000",
+      "lwf_eligible": true,
+      "aadhar_number": "567809874567",
+      "dob_in_aadhar": "2002-07-02T18:29:50.000Z",
+      "full_name_in_aadhar": "sandeep chaurasiya",
+      "gender_in_aadhar": "male",
+      "pan_available": true,
+      "pan_number": "abcs23414e",
+      "full_name_in_pan": "sandeep chaurasiya",
+      "dob_in_pan": "1999-02-03T18:29:50.000Z",
+      "parents_name_in_pan": "chaurasiya",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeFinancialDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:32.872Z"
+  },
+  {
+    "data": {
+      "employee_bank_id": "063d4457-d822-51e0-8bfb-eca3f38ef1b1",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "bank_id": "36e70483-9493-5785-96a8-d9ecc08df8bb",
+      "account_number": "223478905",
+      "account_type": "salary",
+      "ifsc_code": "hdfc0000156",
+      "branch_name": "bailey road, patna",
+      "name_on_account": "nabeel hassan",
+      "is_primary": true,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeBankDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:37.759Z"
+  },
+  {
+    "data": {
+      "empl_financial_id": "443a3d13-031d-5204-b3e0-527f32b24a92",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "compliance_id": "7f745f62-8ee3-5db3-aeaf-20c3c82f549b",
+      "employee_bank_id": "063d4457-d822-51e0-8bfb-eca3f38ef1b1",
+      "salary_payment_mode": "bank_transfer",
+      "pf_details_available": true,
+      "pf_number": "mamum00641480000001285",
+      "pf_joining_date": "2024-09-30T18:29:50.000Z",
+      "employee_contribution_to_pf": "12% of basic salary",
+      "uan": null,
+      "esi_details_available": true,
+      "esi_eligible": true,
+      "employer_esi_number": "31001234560000000",
+      "lwf_eligible": true,
+      "aadhar_number": "278992785243",
+      "dob_in_aadhar": "1991-07-31T18:29:50.000Z",
+      "full_name_in_aadhar": "nabeel hassan",
+      "gender_in_aadhar": "male",
+      "pan_available": true,
+      "pan_number": "lkyt12365y",
+      "full_name_in_pan": "nabeel hassan",
+      "dob_in_pan": "2002-02-01T18:29:50.000Z",
+      "parents_name_in_pan": "iftekhar ahmad",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeFinancialDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:42.073Z"
+  },
+  {
+    "data": {
+      "salary_id": "cefde3cb-6fd5-5e9b-ba90-3072c1d7fe74",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "structure_id": "c447b2b6-51eb-5a87-98b7-91ed9f691710",
+      "effective_from": "2023-12-31T18:29:50.000Z",
+      "effective_to": null,
+      "annual_ctc": "600000.00",
+      "monthly_ctc": "50000.00",
+      "basic_percent": "40.00",
+      "hra_percent": "40.00",
+      "revision_type": null,
+      "revision_reason": null,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeSalary after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:47.663Z"
+  },
+  {
+    "data": {
+      "salary_id": "5178c1b3-384c-5ff3-b7c0-eb499be3ad65",
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "structure_id": "c447b2b6-51eb-5a87-98b7-91ed9f691710",
+      "effective_from": "2024-04-05T18:29:50.000Z",
+      "effective_to": null,
+      "annual_ctc": "100000.00",
+      "monthly_ctc": "6000.00",
+      "basic_percent": "40.00",
+      "hra_percent": "40.00",
+      "revision_type": null,
+      "revision_reason": null,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeSalary after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:51.684Z"
+  },
+  {
+    "data": {
+      "salary_id": "63b869c0-6f85-5ebb-9f1f-3e2da01e3179",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "structure_id": "c447b2b6-51eb-5a87-98b7-91ed9f691710",
+      "effective_from": "2025-02-01T18:29:50.000Z",
+      "effective_to": null,
+      "annual_ctc": "5500000.00",
+      "monthly_ctc": "400000.00",
+      "basic_percent": "40.00",
+      "hra_percent": "40.00",
+      "revision_type": null,
+      "revision_reason": null,
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeSalary after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:13:55.935Z"
+  },
+  {
+    "data": {
+      "run_id": "1cd68f7d-22d5-5513-b1a6-8acafa11a419",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "cycle_id": "d130fa62-83b1-5ff5-9d90-79f0d06f8040",
+      "run_date": "2024-01-29T18:29:50.000Z",
+      "start_date": "2023-12-31T18:29:50.000Z",
+      "end_date": "2024-01-30T18:29:50.000Z",
+      "total_employees": 100,
+      "total_gross": "5000000.00",
+      "total_deductions": "1000000.00",
+      "total_net_pay": "4000000.00",
+      "status": "completed",
+      "locked": true,
+      "processed_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "approved_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "remarks": "janauary 2024 payroll processed successfully.",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert PayrollRun after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:01.261Z"
+  },
+  {
+    "data": {
+      "module_id": "dfc85651-7450-5378-8083-e4452e775911",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "module_name": "leave policy",
+      "module_code": "leave",
+      "module_category": "leave",
+      "module_description": "company leave policy module",
+      "version": "1.0.0",
+      "is_mandatory": false,
+      "status": "active",
+      "effective_from": "2023-12-31T18:29:50.000Z",
+      "effective_to": null,
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert PolicyModule after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:06.072Z"
+  },
+  {
+    "data": {
+      "setting_id": "d55a4892-302d-5b8d-92a5-9eb76a853b1a",
+      "module_id": "dfc85651-7450-5378-8083-e4452e775911",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "setting_name": "max casual leaves",
+      "setting_key": "max_casual_leave",
+      "setting_value": {
+        "value": 12
+      },
+      "setting_type": "number",
+      "is_encrypted": false,
+      "is_configurable": true,
+      "validation_rules": {
+        "min": 0,
+        "max": 30
+      },
+      "default_value": {
+        "value": 12
+      },
+      "description": "maximum number of casual leaves allowed per year",
+      "status": "active",
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert PolicySetting after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:10.089Z"
+  },
+  {
+    "data": {
+      "policy_id": "e8a7e3d1-38f2-5377-92bb-31902fa5f8d2",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "employment_type_id": "0cc95bb2-8ee6-518f-8c0a-eae8370cda0f",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "dept_id": "85e8e0bb-2167-5292-ac12-721440747a7a",
+      "probation_code": "ny01",
+      "probation_period_months": 6,
+      "min_extension_months": 1,
+      "max_extension_months": 3,
+      "extension_allowed": true,
+      "max_extensions": 2,
+      "auto_confirm": false,
+      "notice_period_days": 30,
+      "review_required": true,
+      "review_before_days": 15,
+      "status": "active",
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert ProbationPolicy after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:15.288Z"
+  },
+  {
+    "data": {
+      "version_id": "e9ecfc44-51c4-5931-9988-ccf515d3fdbc",
+      "module_id": "dfc85651-7450-5378-8083-e4452e775911",
+      "version_number": "1.0.0",
+      "document_url": "https://example.com/policies/leave-policy-v1.pdf",
+      "change_summary": "initial version fo leave policy",
+      "status": "active",
+      "effective_from": "2023-12-31T18:29:50.000Z",
+      "effective_to": null,
+      "approved_at": null,
+      "approved_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_by": "017cc8c7-6fcb-585f-bf6f-a963248f3375",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert PolicyDocumentVersion after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:20.304Z"
+  },
+  {
+    "data": {
+      "acknowledgment_id": "59d7990d-d524-5b5e-a61e-2906e8cd8b1c",
+      "version_id": "e9ecfc44-51c4-5931-9988-ccf515d3fdbc",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "acknowledged_at": "2025-03-14T19:37:25.537Z",
+      "acknowledgment_type": "electronic",
+      "ip_address": "192.168.1.1",
+      "user_agent": "mozilla/5.0 (windows nt 10.0; win64; x64",
+      "comments": "acknowledge the poiicy",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert PolicyAcknowledgment after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:25.220Z"
+  },
+  {
+    "data": {
+      "config_id": "55bfae96-757e-55b0-a14b-84ad7d119fac",
+      "module_id": "dfc85651-7450-5378-8083-e4452e775911",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "leave_type": "casual",
+      "accrual_frequency": "monthly",
+      "days_per_year": 12,
+      "min_days_per_request": 1,
+      "max_days_per_request": 3,
+      "min_notice_days": 1,
+      "max_carry_forward_days": 3,
+      "carry_forward_validity_months": 6,
+      "is_encashable": false,
+      "encashment_limit": 0,
+      "requires_approval": true,
+      "requires_documents": false,
+      "document_submission_days": 0,
+      "applicable_from_months": 0,
+      "prorata_basis": true,
+      "status": "active",
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert LeavePolicyConfiguration after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:29.429Z"
+  },
+  {
+    "data": {
+      "calendar_id": "8c9ee76f-99f0-50cb-b74c-394b7c9242ff",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "year": 2024,
+      "start_date": "2023-12-31T18:29:50.000Z",
+      "end_date": "2024-12-30T18:29:50.000Z",
+      "status": "active",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert HolidayCalendarYear after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:33.444Z"
+  },
+  {
+    "data": {
+      "calendar_detail_id": "294a766c-85cb-5ef3-b72d-730b2552a09f",
+      "calendar_id": "8c9ee76f-99f0-50cb-b74c-394b7c9242ff",
+      "holiday_id": "0b245f58-2766-5a71-902a-0abb542528fd",
+      "holiday_date": "2023-12-31T18:29:50.000Z",
+      "is_half_day": false,
+      "half_day_type": "none",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert HolidayCalendarDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:37.931Z"
+  },
+  {
+    "data": {
+      "calendar_detail_id": "f986496e-3afa-5cf6-ab9b-ca3320882102",
+      "calendar_id": "8c9ee76f-99f0-50cb-b74c-394b7c9242ff",
+      "holiday_id": "1cb7b5e8-9f82-5786-a1ab-ed00381009e3",
+      "holiday_date": "2024-08-14T18:29:50.000Z",
+      "is_half_day": false,
+      "half_day_type": "none",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert HolidayCalendarDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:42.150Z"
+  },
+  {
+    "data": {
+      "calendar_detail_id": "04c68558-da00-50aa-a4d1-3ec974675139",
+      "calendar_id": "8c9ee76f-99f0-50cb-b74c-394b7c9242ff",
+      "holiday_id": "df1c8a7c-df6a-55bb-8aa7-49a0f7ce4f3e",
+      "holiday_date": "2024-05-13T18:29:50.000Z",
+      "is_half_day": false,
+      "half_day_type": "none",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert HolidayCalendarDetail after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:46.628Z"
+  },
+  {
+    "data": {
+      "id": "07cde23e-f8b4-5f04-bd93-c003385cd444",
+      "organizationId": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "moduleId": "dfc85651-7450-5378-8083-e4452e775911",
+      "captureMethods": [
+        "web_app",
+        "mobile_app"
+      ],
+      "geoFencingEnabled": true,
+      "geoFenceRadius": 500,
+      "shiftType": "fixed",
+      "shiftStartTime": "09:00:00",
+      "shiftEndTime": "18:00:00",
+      "flexibleHours": null,
+      "gracePeriodMinutes": 15,
+      "halfDayHours": "4.00",
+      "fullDayHours": "8.00",
+      "breakDurationMinutes": 60,
+      "workDaysPerWeek": 5,
+      "overtimePolicyEnabled": true,
+      "minimumOvertimeMinutes": 30,
+      "overtimeCalculationType": null,
+      "maxOvertimeHoursMonthly": null,
+      "latePenaltyType": "none",
+      "latePenaltyLeaveType": null,
+      "missingSwipePolicy": "automatic",
+      "autoCheckoutEnabled": false,
+      "autoCheckoutTime": null,
+      "regularizationAllowed": true,
+      "regularizationWindowDays": 5,
+      "regularizationLimitMonthly": 2,
+      "weekendOvertimeMultiplier": "1.50",
+      "holidayOvertimeMultiplier": "2.00",
+      "status": "active",
+      "createdAt": "2025-03-14T19:37:25.537Z",
+      "updatedAt": "2025-03-14T19:37:25.537Z",
+      "createdBy": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updatedBy": "3ae28254-ddd2-5336-8228-d9331509f6a6"
+    },
+    "error": "Failed to insert AttendanceSettings after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:50.660Z"
+  },
+  {
+    "data": {
+      "shift_id": "d8c6d96f-23cd-5a81-bd73-7ce91e869f36",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "shift_name": "morning shift",
+      "shift_type": "fixed",
+      "start_time": "09:00:00",
+      "end_time": "05:30:00",
+      "flexible_hours": null,
+      "break_duration": 60,
+      "grace_period_minutes": 15,
+      "half_day_hours": "4.25",
+      "full_day_hours": "8.50",
+      "description": "standard morning shift with 1 hour break",
+      "status": "active",
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert ShiftConfiguration after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:54.679Z"
+  },
+  {
+    "data": {
+      "shift_id": "adcb4fc5-5e3c-5f81-85fa-bd1753caf930",
+      "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
+      "shift_name": "flexi shift",
+      "shift_type": "flexible",
+      "start_time": "06:30:00",
+      "end_time": "01:30:00",
+      "flexible_hours": 2,
+      "break_duration": 45,
+      "grace_period_minutes": 30,
+      "half_day_hours": "4.00",
+      "full_day_hours": "8.00",
+      "description": "flexible timing with 2 hours window",
+      "status": "active",
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert ShiftConfiguration after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:14:58.695Z"
+  },
+  {
+    "data": {
+      "assignment_id": "2ce9a7ea-8810-5de1-a182-f1039061b1cf",
+      "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
+      "shift_id": "d8c6d96f-23cd-5a81-bd73-7ce91e869f36",
+      "effective_from": "2025-03-30T18:29:50.000Z",
+      "effective_to": null,
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeShiftAssignment after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:15:04.097Z"
+  },
+  {
+    "data": {
+      "assignment_id": "4c9bd323-7ca8-52c8-84f7-376d453595a3",
+      "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
+      "shift_id": "adcb4fc5-5e3c-5f81-85fa-bd1753caf930",
+      "effective_from": "2025-02-28T18:29:50.000Z",
+      "effective_to": null,
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeShiftAssignment after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:15:08.841Z"
+  },
+  {
+    "data": {
+      "assignment_id": "ced2423d-8334-5829-b2a1-13aea9ac911f",
+      "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "shift_id": "d8c6d96f-23cd-5a81-bd73-7ce91e869f36",
+      "effective_from": "2025-03-04T18:29:50.000Z",
+      "effective_to": null,
+      "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
+      "created_at": "2025-03-14T19:37:25.537Z",
+      "updated_at": "2025-03-14T19:37:25.537Z"
+    },
+    "error": "Failed to insert EmployeeShiftAssignment after 3 attempts. Rollback completed.",
+    "timestamp": "2025-03-14T20:15:13.531Z"
+  }
+]
