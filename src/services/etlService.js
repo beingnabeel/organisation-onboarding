@@ -590,6 +590,14 @@ class ETLService {
     // Extract only the time portion
     return date.toISOString().split("T")[1].substring(0, 8);
   }
+  currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+
+  getISOStringWithTime = (date, time) => {
+    const [hours, minutes, seconds] = time.split(":").map(Number); // Extract hours, minutes, seconds
+    const dateObj = new Date(date); // Create date object
+    dateObj.setUTCHours(hours, minutes, seconds, 0); // Set extracted time in UTC
+    return dateObj.toISOString(); // Convert to ISO string format
+  };
 
   /**
    * Function to convert various date formats to ISO 8601 format
@@ -3177,10 +3185,26 @@ class ETLService {
             configDataMap.accural_frequency || ""
           );
 
+          // Generate the module_id using the same deterministic UUID function that is used when processing PolicyModules
+          // This ensures consistency between the module_id references
           const moduleId = generateDeterministicUUID(
             configDataMap.module_code || "",
             configDataMap.module_category || ""
           );
+          
+          // Log details about the module_id generation to help with debugging
+          logger.info({
+            message: "Generated module_id for LeavePolicyConfiguration",
+            metadata: {
+              module_id: moduleId,
+              module_code: configDataMap.module_code || "",
+              module_category: configDataMap.module_category || "",
+              config_id: configId,
+              leave_type: configDataMap.leave_type || "",
+              generated_module_id: moduleId,
+              warning: "Ensure this module_id exists in the policy_modules table"
+            }
+          });
 
           const orgId = generateDeterministicUUID(
             configDataMap.auth_signatory_designation || "",
@@ -3903,8 +3927,14 @@ class ETLService {
               geoFencingEnabled: geoFencingEnabled,
               geoFenceRadius: geoFenceRadius,
               shiftType: attendanceDataMap.shift_type || "fixed",
-              shiftStartTime: shiftStartTime,
-              shiftEndTime: shiftEndTime,
+              shiftStartTime: this.getISOStringWithTime(
+                this.currentDate,
+                shiftStartTime
+              ),
+              shiftEndTime: this.getISOStringWithTime(
+                this.currentDate,
+                shiftEndTime
+              ),
               flexibleHours: flexibleHours,
               gracePeriodMinutes: gracePeriodMinutes,
               halfDayHours: parseFloat(halfDayHours).toFixed(2),
@@ -4439,8 +4469,13 @@ class ETLService {
               org_id: orgId,
               shift_name: shiftDataMap.shift_name || "",
               shift_type: shiftDataMap.shift_type || "",
-              start_time: startTime, // Now properly formatted as HH:mm:ss
-              end_time: endTime, // Now properly formatted as HH:mm:ss
+              // start_time: startTime, // Now properly formatted as HH:mm:ss
+              // end_time: endTime, // Now properly formatted as HH:mm:ss
+              start_time: this.getISOStringWithTime(
+                this.currentDate,
+                startTime
+              ),
+              end_time: this.getISOStringWithTime(this.currentDate, endTime),
               flexible_hours: flexibleHours,
               break_duration: breakDuration,
               grace_period_minutes: gracePeriodMinutes,

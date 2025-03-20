@@ -5,6 +5,9 @@ const prisma = new PrismaClient();
 class ValidationService {
   constructor() {
     this.prisma = prisma;
+    
+    // Define the UUID regex pattern as a static property for reuse
+    this.uuidRegex = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     this.validators = {
       Organization: (data) => {
         const errors = [];
@@ -2402,6 +2405,18 @@ class ValidationService {
     } else {
       return "unknown";
     }
+  }
+
+  /**
+   * Validates if a string is a valid UUID
+   * @param {string} uuid - The string to validate as UUID
+   * @returns {boolean} - True if the string is a valid UUID, false otherwise
+   */
+  isValidUUID(uuid) {
+    if (!uuid || typeof uuid !== 'string') {
+      return false;
+    }
+    return this.uuidRegex.test(uuid);
   }
 
   validate(data) {

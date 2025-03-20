@@ -14,7 +14,9 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.744.0",
     "@aws-sdk/s3-request-presigner": "^3.744.0",
+    "@modelcontextprotocol/sdk": "^1.7.0",
     "@prisma/client": "^6.3.1",
+    "@smithery/sdk": "^1.0.2",
     "amqplib": "^0.10.5",
     "axios": "^1.8.2",
     "bcryptjs": "^2.4.3",
