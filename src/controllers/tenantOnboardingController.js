@@ -7,9 +7,7 @@ const { PrismaClient } = require("@prisma/client");
 
 const prisma = new PrismaClient();
 
-/**
- * Parse Excel file and write data to etlextract.json
- */
+// here we are parsing the excel file and writing the data to etlextract.json
 exports.processExcelFile = catchAsync(async (req, res, next) => {
   const filePath = path.resolve(
     __dirname,
@@ -39,10 +37,7 @@ exports.processExcelFile = catchAsync(async (req, res, next) => {
   });
 });
 
-/**
- * Handle objects of different types received from RabbitMQ consumer
- * Maps object types to Prisma models and inserts the data
- */
+// here we are handling the objects of different types received from RabbitMQ consumer and inserting the data into the database
 exports.handleObjectData = catchAsync(async (req, res, next) => {
   const { objectType } = req.params;
   const data = req.body;
@@ -74,7 +69,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
     "employment-types": "employmentType",
     "job-titles": "jobTitle",
     employees: "employee",
-  employee: "employee", // Added singular form to handle both formats
+    employee: "employee", // Added singular form to handle both formats
     "employee-personal-details": "employeePersonalDetail",
     "employee-bank-details": "employeeBankDetail",
     "employee-financial-details": "employeeFinancialDetail",
@@ -113,7 +108,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
     "employment-types": "employment_type_id",
     "job-titles": "job_title_id",
     employees: "employee_id",
-  employee: "employee_id", // Added singular form to handle both formats
+    employee: "employee_id", // Added singular form to handle both formats
     "employee-personal-details": "empl_personal_det_id",
     "employee-bank-details": "employee_bank_id",
     "employee-financial-details": "empl_financial_id",
@@ -128,7 +123,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
     "probation-policies": "policy_id",
     "policy-document-versions": "version_id",
     "policy-acknowledgments": "acknowledgment_id",
-    "leave-policy-configurations": "config_id", // Fixed: was using leave_policy_id which is wrong
+    "leave-policy-configurations": "config_id",
     "holiday-calendar-years": "calendar_id",
     "holiday-masters": "holiday_id",
     "holiday-calendar-details": "holiday_detail_id",
@@ -161,10 +156,10 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
       );
     }
 
-    // Create where condition using the correct primary key field
+    // here we are creating the where condition using the correct primary key field
     let whereCondition = {};
 
-    // Special handling for HolidayCalendarYear model
+    // here we are handling the special case for HolidayCalendarYear model
     if (objectType === "holiday-calendar-years") {
       // If calendar_id is missing but we have org_id and year which form a unique constraint
       if (!data.calendar_id && data.org_id && data.year !== undefined) {
@@ -199,7 +194,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         );
       }
     }
-    // Special handling for AttendanceSettings model
+    // here we are handling the special case for AttendanceSettings model
     else if (objectType === "attendance-settings") {
       // Check for required identifiers
       if (data.id) {
@@ -384,7 +379,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         );
       }
     }
-    // Special handling for LeavePolicyConfiguration model to use its unique constraint
+    // here we are handling the special case for LeavePolicyConfiguration model to use its unique constraint
     else if (
       objectType === "leave-policy-configurations" &&
       req.query.useUniqueLeaveTypeOrg === "true"
@@ -406,7 +401,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         },
       };
     }
-    // Special handling for DepartmentType model to use type_code as a unique constraint
+    // here we are handling the special case for DepartmentType model to use type_code as a unique constraint
     else if (objectType === "department-types") {
       // Clean up data by removing fields that don't belong to DepartmentType model
       if (data.employment_type_id) {
@@ -458,7 +453,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         whereCondition[primaryKeyField] = data[primaryKeyField];
       }
     }
-    // Special handling for EmploymentType model to fix possible data mismatches
+    // here we are handling the special case for EmploymentType model to use type_code as a unique constraint
     else if (objectType === "employment-types") {
       // Check if employment_type_id exists, if not use type_code which is unique
       if (!data.employment_type_id && data.type_code) {
@@ -486,7 +481,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         whereCondition[primaryKeyField] = data[primaryKeyField];
       }
     }
-    // Special handling for Department model to use dept_code as a unique constraint
+    // here we are handling the special case for Department model to use dept_code as a unique constraint
     else if (objectType === "departments") {
       // Clean up data by checking for department_id and converting it to dept_id if needed
       if (data.department_id && !data.dept_id) {
@@ -577,7 +572,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         whereCondition[primaryKeyField] = data[primaryKeyField];
       }
     }
-    // Special handling for ShiftConfiguration model
+    // here we are handling the special case for ShiftConfiguration model
     else if (objectType === "shift-configurations") {
       // First set up the whereCondition properly for the upsert operation
       if (data.shift_id) {
@@ -742,7 +737,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for Employee model
+    // here we are handling the special case for Employee model
     else if (objectType === "employees") {
       // First set up the whereCondition properly for the upsert operation
       if (data.employee_id) {
@@ -839,17 +834,18 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                 timestamp: new Date().toISOString(),
               },
             });
-            
+
             // If we have org_id and work_location_name, try to find or create the location
             if (data.org_id && data.work_location_name) {
               // Try to find by name within the organization
-              const locationByName = await prisma.OrganizationLocation.findFirst({
-                where: { 
-                  org_id: data.org_id,
-                  location_name: data.work_location_name 
-                },
-              });
-              
+              const locationByName =
+                await prisma.OrganizationLocation.findFirst({
+                  where: {
+                    org_id: data.org_id,
+                    location_name: data.work_location_name,
+                  },
+                });
+
               if (locationByName) {
                 // Use the found location
                 data.work_location_id = locationByName.location_id;
@@ -869,12 +865,12 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     data: {
                       org_id: data.org_id,
                       location_name: data.work_location_name,
-                      status: 'active',
+                      status: "active",
                       created_at: new Date(),
-                      updated_at: new Date()
+                      updated_at: new Date(),
                     },
                   });
-                  
+
                   data.work_location_id = newLocation.location_id;
                   logger.info({
                     message: `Created new location for Employee`,
@@ -951,7 +947,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                 timestamp: new Date().toISOString(),
               },
             });
-            
+
             // If we have org_id and dept_name, try to find or create the department
             if (data.org_id && data.dept_name) {
               try {
@@ -962,7 +958,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     dept_name: data.dept_name,
                   },
                 });
-                
+
                 if (deptByName) {
                   // Use existing department
                   data.dept_id = deptByName.dept_id;
@@ -982,7 +978,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     const deptType = await prisma.DepartmentType.findFirst({
                       where: { org_id: data.org_id },
                     });
-                    
+
                     if (deptType) {
                       deptTypeId = deptType.dept_type_id;
                     } else {
@@ -990,29 +986,30 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                       const newDeptType = await prisma.DepartmentType.create({
                         data: {
                           org_id: data.org_id,
-                          dept_type_name: 'Default',
-                          dept_type_desc: 'Default department type',
-                          status: 'active',
+                          dept_type_name: "Default",
+                          dept_type_desc: "Default department type",
+                          status: "active",
                           created_at: new Date(),
-                          updated_at: new Date()
+                          updated_at: new Date(),
                         },
                       });
                       deptTypeId = newDeptType.dept_type_id;
                     }
-                    
+
                     // Create the department
                     const newDept = await prisma.Department.create({
                       data: {
                         org_id: data.org_id,
                         dept_type_id: deptTypeId,
                         dept_name: data.dept_name,
-                        dept_desc: data.dept_desc || `${data.dept_name} department`,
-                        status: 'active',
+                        dept_desc:
+                          data.dept_desc || `${data.dept_name} department`,
+                        status: "active",
                         created_at: new Date(),
-                        updated_at: new Date()
+                        updated_at: new Date(),
                       },
                     });
-                    
+
                     data.dept_id = newDept.dept_id;
                     logger.info({
                       message: `Created new department for Employee`,
@@ -1097,7 +1094,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                 timestamp: new Date().toISOString(),
               },
             });
-            
+
             // If we have org_id and job_title_name, try to find or create the job title
             if (data.org_id && data.job_title_name) {
               try {
@@ -1108,7 +1105,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     job_title_name: data.job_title_name,
                   },
                 });
-                
+
                 if (titleByName) {
                   // Use existing job title
                   data.job_title_id = titleByName.job_title_id;
@@ -1127,13 +1124,15 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     data: {
                       org_id: data.org_id,
                       job_title_name: data.job_title_name,
-                      job_title_desc: data.job_title_desc || `${data.job_title_name} position`,
-                      status: 'active',
+                      job_title_desc:
+                        data.job_title_desc ||
+                        `${data.job_title_name} position`,
+                      status: "active",
                       created_at: new Date(),
-                      updated_at: new Date()
+                      updated_at: new Date(),
                     },
                   });
-                  
+
                   data.job_title_id = newJobTitle.job_title_id;
                   logger.info({
                     message: `Created new job title for Employee`,
@@ -1204,7 +1203,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                 timestamp: new Date().toISOString(),
               },
             });
-            
+
             // If we have org_id and employment_type_name, try to find or create the employment type
             if (data.org_id && data.employment_type_name) {
               try {
@@ -1215,7 +1214,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     employment_type_name: data.employment_type_name,
                   },
                 });
-                
+
                 if (typeByName) {
                   // Use existing employment type
                   data.employment_type_id = typeByName.employment_type_id;
@@ -1234,14 +1233,17 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     data: {
                       org_id: data.org_id,
                       employment_type_name: data.employment_type_name,
-                      employment_type_desc: data.employment_type_desc || `${data.employment_type_name} employment type`,
-                      status: 'active',
+                      employment_type_desc:
+                        data.employment_type_desc ||
+                        `${data.employment_type_name} employment type`,
+                      status: "active",
                       created_at: new Date(),
-                      updated_at: new Date()
+                      updated_at: new Date(),
                     },
                   });
-                  
-                  data.employment_type_id = newEmploymentType.employment_type_id;
+
+                  data.employment_type_id =
+                    newEmploymentType.employment_type_id;
                   logger.info({
                     message: `Created new employment type for Employee`,
                     metadata: {
@@ -1296,7 +1298,13 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
       }
 
       // Format date fields for Employee
-      const dateFields = ['hire_date', 'termination_date', 'date_of_birth', 'created_at', 'updated_at'];
+      const dateFields = [
+        "hire_date",
+        "termination_date",
+        "date_of_birth",
+        "created_at",
+        "updated_at",
+      ];
       for (const field of dateFields) {
         if (data[field]) {
           try {
@@ -1364,7 +1372,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for EmployeeShiftAssignment model
+    // here we are handling the special case for EmployeeShiftAssignment model
     else if (objectType === "employee-shift-assignments") {
       // First set up the whereCondition properly for the upsert operation
       if (data.assignment_id) {
@@ -1580,7 +1588,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for employee-shift-assignments model
+    // here we are handling the special case for employee-shift-assignments model
     else if (objectType === "employee-shift-assignments") {
       // First set up the whereCondition properly for the upsert operation
       if (data.assignment_id) {
@@ -2021,7 +2029,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for attendance-settings model
+    // here we are handling the special case for attendance-settings model
     else if (objectType === "attendance-settings") {
       // First set up the whereCondition properly for the upsert operation
       if (data.id) {
@@ -2613,7 +2621,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for holiday-calendar-details model
+    // here we are handling the special case for holiday-calendar-details model
     else if (objectType === "holiday-calendar-details") {
       // First set up the whereCondition properly for the upsert operation
       if (data.calendar_detail_id) {
@@ -2916,7 +2924,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for leave-policy-configurations model
+    // here we are handling the special case for leave-policy-configurations model
     else if (objectType === "leave-policy-configurations") {
       // First set up the whereCondition properly for the upsert operation
       if (data.config_id) {
@@ -3414,7 +3422,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for policy-acknowledgments model
+    // here we are handling the special case for policy-acknowledgments model
     else if (objectType === "policy-acknowledgments") {
       // First set up the whereCondition properly for the upsert operation
       if (data.acknowledgment_id) {
@@ -3697,7 +3705,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for policy-document-versions model
+    // here we are handling the special case for policy-document-versions model
     else if (objectType === "policy-document-versions") {
       // First set up the whereCondition properly for the upsert operation
       if (data.version_id) {
@@ -4102,7 +4110,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for probation-policies model
+    // here we are handling the special case for probation-policies model
     else if (objectType === "probation-policies") {
       // First set up the whereCondition properly for the upsert operation
       if (data.policy_id) {
@@ -4609,7 +4617,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for policy-settings model
+    // here we are handling the special case for policy-settings model
     else if (objectType === "policy-settings") {
       // First set up the whereCondition properly for the upsert operation
       if (data.setting_id) {
@@ -5034,7 +5042,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for policy-modules model
+    // here we are handling the special case for policy-modules model
     else if (objectType === "policy-modules") {
       // First set up the whereCondition properly for the upsert operation
       if (data.module_id) {
@@ -5419,7 +5427,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for payroll-runs model
+    // here we are handling the special case for payroll-runs model
     else if (objectType === "payroll-runs") {
       // First set up the whereCondition properly for the upsert operation
       if (data.run_id) {
@@ -5520,12 +5528,12 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                   timestamp: new Date().toISOString(),
                 },
               });
-              
+
               try {
                 // Determine cycle_type and frequency defaults if not provided
-                const cycleType = data.cycle_type || 'regular';
-                const frequency = data.frequency || 'monthly';
-                
+                const cycleType = data.cycle_type || "regular";
+                const frequency = data.frequency || "monthly";
+
                 // Create new payroll cycle record with the information we have
                 payrollCycle = await prisma.PayrollCycle.create({
                   data: {
@@ -5536,12 +5544,12 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     frequency: frequency,
                     start_date: data.start_date || new Date(),
                     end_date: data.end_date || null,
-                    status: 'active',
+                    status: "active",
                     created_at: new Date(),
                     updated_at: new Date(),
                   },
                 });
-                
+
                 logger.info({
                   message: `Successfully created missing payroll cycle with ID ${data.cycle_id}`,
                   metadata: {
@@ -5559,7 +5567,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     timestamp: new Date().toISOString(),
                   },
                 });
-                
+
                 return res.status(400).json({
                   status: "error",
                   message: `Could not create missing payroll cycle: ${createError.message}`,
@@ -5765,7 +5773,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for employee-salaries model
+    // here we are handling the special case for employee-salaries model
     else if (objectType === "employee-salaries") {
       // First set up the whereCondition properly for the upsert operation
       if (data.salary_id) {
@@ -5867,7 +5875,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                   timestamp: new Date().toISOString(),
                 },
               });
-              
+
               try {
                 // Create new salary structure record with the information we have
                 salaryStructure = await prisma.SalaryStructure.create({
@@ -5875,12 +5883,12 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     structure_id: data.structure_id,
                     structure_name: data.structure_name,
                     org_id: data.org_id || null,
-                    status: 'active',
+                    status: "active",
                     created_at: new Date(),
                     updated_at: new Date(),
                   },
                 });
-                
+
                 logger.info({
                   message: `Successfully created missing salary structure with ID ${data.structure_id}`,
                   metadata: {
@@ -5898,7 +5906,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     timestamp: new Date().toISOString(),
                   },
                 });
-                
+
                 // Continue with a warning since we attempted but couldn't create the salary structure
                 return res.status(400).json({
                   status: "error",
@@ -6062,7 +6070,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for employee-financial-details model
+    // here we are handling the special case for employee-financial-details model
     else if (objectType === "employee-financial-details") {
       // First set up the whereCondition properly for the upsert operation
       if (data.empl_financial_id) {
@@ -6266,7 +6274,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for employee-bank-details model
+    // here we are handling the special case for employee-bank-details model
     else if (objectType === "employee-bank-details") {
       // First set up the whereCondition properly for the upsert operation
       if (data.employee_bank_id) {
@@ -6378,19 +6386,19 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                   timestamp: new Date().toISOString(),
                 },
               });
-              
+
               try {
                 // Create new bank record with the information we have
                 bank = await prisma.BankMaster.create({
                   data: {
                     bank_id: data.bank_id,
                     bank_name: data.bank_name,
-                    status: 'active',
+                    status: "active",
                     created_at: new Date(),
                     updated_at: new Date(),
                   },
                 });
-                
+
                 logger.info({
                   message: `Successfully created missing bank with ID ${data.bank_id}`,
                   metadata: {
@@ -6408,7 +6416,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
                     timestamp: new Date().toISOString(),
                   },
                 });
-                
+
                 // Continue with a warning since we attempted but couldn't create the bank
                 return res.status(400).json({
                   status: "error",
@@ -6464,7 +6472,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         });
       }
     }
-    // Special handling for employee-personal-details model
+    // here we are handling the special case for employee-personal-details model
     else if (objectType === "employee-personal-details") {
       // First set up the whereCondition properly for the upsert operation
       if (data.empl_personal_det_id) {
@@ -6576,7 +6584,7 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
         }
       }
     }
-    // Special handling for OrganizationLocation model
+    // here we are handling the special case for organization-locations model
     else if (objectType === "organization-locations") {
       // Handle the case where org_id and location_name are provided but location_id is missing
       if (!data.location_id && data.org_id && data.location_name) {
@@ -6804,7 +6812,8 @@ exports.getObjectById = catchAsync(async (req, res, next) => {
     let entity;
     try {
       // Check if the ID is a valid UUID format
-      const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+      const uuidRegex =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
       if (!uuidRegex.test(id)) {
         logger.warn({
           message: `Invalid UUID format for ${objectType} ID`,

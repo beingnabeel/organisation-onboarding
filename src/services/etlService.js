@@ -3027,7 +3027,8 @@ class ETLService {
 
           const createdById = generateDeterministicUUID(
             versionDataMap.created_by_emp_number || "",
-            versionDataMap.created_by_emp_first_name || ""
+            // versionDataMap.created_by_emp_first_name || ""
+            versionDataMap.updated_by_emp_first_name || ""
           );
 
           const updatedById = generateDeterministicUUID(
@@ -3191,7 +3192,7 @@ class ETLService {
             configDataMap.module_code || "",
             configDataMap.module_category || ""
           );
-          
+
           // Log details about the module_id generation to help with debugging
           logger.info({
             message: "Generated module_id for LeavePolicyConfiguration",
@@ -3202,8 +3203,9 @@ class ETLService {
               config_id: configId,
               leave_type: configDataMap.leave_type || "",
               generated_module_id: moduleId,
-              warning: "Ensure this module_id exists in the policy_modules table"
-            }
+              warning:
+                "Ensure this module_id exists in the policy_modules table",
+            },
           });
 
           const orgId = generateDeterministicUUID(

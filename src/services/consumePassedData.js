@@ -10,7 +10,7 @@ const prisma = new PrismaClient();
 class ConsumePassedData {
   constructor() {
     this.maxRetries = 3;
-    this.retryDelay = 2000; // 2 seconds
+    this.retryDelay = 2000;
     this.processedObjectsCache = [];
 
     // Track deferred entities that are waiting for dependencies
@@ -26,9 +26,9 @@ class ConsumePassedData {
     this.deferredVersions = [];
     this.deferredAcknowledgments = [];
     this.deferredEmployeeShiftAssignments = [];
-    this.deferredAttendanceSettings = []; // Adding deferred array for AttendanceSettings
+    this.deferredAttendanceSettings = [];
     this.schemaMap = {
-      // Map object properties to their corresponding schema/table
+      // Mapping object properties to their corresponding schema/table
       org_id: "Organization",
       bank_id: "BankMaster",
       org_bank_id: "OrganizationBankDetail",
@@ -113,9 +113,7 @@ class ConsumePassedData {
     this.baseURL = process.env.API_BASE_URL || "http://localhost:8085";
   }
 
-  /**
-   * Start consuming messages from the passed_data queue
-   */
+  // here we are starting the consumer for the passed_data queue
   async startConsumer() {
     try {
       logger.info({
@@ -148,6 +146,7 @@ class ConsumePassedData {
             this.deferredAttendanceSettings = [];
 
             // Parse the message content
+            // here we are using msg.content because the payload we sent to the queue is stored in the content property of the msg object and is represented as a buffer. a buffer is a raw binary data structure in node.js and it needs to be converted into a string before it can be parsed as
             const content = JSON.parse(msg.content.toString());
             logger.info({
               message: "Received message from passed_data queue",
@@ -160,8 +159,8 @@ class ConsumePassedData {
             // Process the message
             await this.processMessage(content);
 
-            // Process any deferred items that might still be pending
-            // This handles cases where the referenced records came after the dependent records
+            // here we will try to process any deferred items that might still be pending.
+            // here this is basically trying to handle the case where the referenced records came after the dependent records.
             if (
               (this.deferredPolicyDocumentVersions &&
                 this.deferredPolicyDocumentVersions.length > 0) ||
@@ -245,10 +244,7 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process a message and insert it into the appropriate database table
-   * @param {Object} data - The data object from the message
-   */
+  // here we are processing the message and inserting it into the appropriate database table
   async processMessage(data) {
     // Initialize deferred items arrays if not already created
     if (!this.deferredPolicyAcknowledgments) {
@@ -473,10 +469,8 @@ class ConsumePassedData {
       await this.processDeferredAcknowledgments();
     }
   }
+  // now we will be processing the deferred objects which where waiting for the respective dependencies.
 
-  /**
-   * Process deferred PolicyAcknowledgment objects that were waiting for their referenced PolicyDocumentVersion
-   */
   async processDeferredAcknowledgments() {
     if (
       !this.deferredPolicyAcknowledgments ||
@@ -537,9 +531,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred PolicyModule objects that were waiting for referenced Employees
-   */
   async processDeferredPolicyModules() {
     if (
       !this.deferredPolicyModules ||
@@ -600,9 +591,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred PolicySetting objects that were waiting for their referenced PolicyModule
-   */
   async processDeferredPolicySettings() {
     if (
       !this.deferredPolicySettings ||
@@ -663,9 +651,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred ProbationPolicy objects that were waiting for referenced Employees
-   */
   async processDeferredProbationPolicies() {
     if (
       !this.deferredProbationPolicies ||
@@ -726,9 +711,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred EmployeePersonalDetail objects that were waiting for their referenced Employee
-   */
   async processDeferredEmployeePersonalDetails() {
     if (
       !this.deferredEmployeePersonalDetails ||
@@ -929,9 +911,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred EmployeeBankDetail objects that were waiting for their referenced Employee
-   */
   async processDeferredEmployeeBankDetails() {
     if (
       !this.deferredEmployeeBankDetails ||
@@ -1204,9 +1183,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred EmployeeFinancialDetail objects that were waiting for their referenced Employee and EmployeeBankDetail
-   */
   async processDeferredEmployeeFinancialDetails() {
     if (
       !this.deferredEmployeeFinancialDetails ||
@@ -1528,9 +1504,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred EmployeeSalary objects that were waiting for their referenced Employee and SalaryStructure
-   */
   async processDeferredEmployeeSalaries() {
     if (
       !this.deferredEmployeeSalaries ||
@@ -1872,9 +1845,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred PayrollCycle objects that were waiting for referenced Organizations and Employees
-   */
   async processDeferredPayrollCycles() {
     if (
       !this.deferredPayrollCycles ||
@@ -2159,9 +2129,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred PayrollRun objects that were waiting for referenced Employees
-   */
   async processDeferredPayrollRuns() {
     if (!this.deferredPayrollRuns || this.deferredPayrollRuns.length === 0) {
       return;
@@ -2535,9 +2502,6 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred PolicyDocumentVersion objects that were waiting for their referenced PolicyModule
-   */
   async processDeferredVersions() {
     if (
       !this.deferredPolicyDocumentVersions ||
@@ -3253,9 +3217,7 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process all deferred objects in the correct order
-   */
+  // processing all the deferred objects according to the order specified.
   async processDeferred() {
     // Process foundation entities first (if any are deferred)
     logger.info({
@@ -3308,12 +3270,8 @@ class ConsumePassedData {
     await this.processDeferredEmployeeShiftAssignments();
   }
 
-  /**
-   * Process deferred EmployeeShiftAssignment objects that were waiting for their referenced Employee and ShiftConfiguration
-   */
-  /**
-   * Process deferred AttendanceSettings objects that were waiting for their referenced PolicyModule
-   */
+  // Process deferred AttendanceSettings objects that were waiting for their referenced PolicyModule
+
   async processDeferredAttendanceSettings() {
     if (
       !this.deferredAttendanceSettings ||
@@ -3382,6 +3340,7 @@ class ConsumePassedData {
     }
   }
 
+  // processing all the deferred employee shift assignments ( this is basically waiting for the employee and shift configuration to be processed)
   async processDeferredEmployeeShiftAssignments() {
     if (
       !this.deferredEmployeeShiftAssignments ||
@@ -3450,10 +3409,7 @@ class ConsumePassedData {
     }
   }
 
-  /**
-   * Process deferred LeavePolicyConfiguration records
-   * These are deferred when a required module_id reference is not found
-   */
+  // here we are processing all the deferred leave policy configurations it is basically waiting for the module_id to be processed
   async processDeferredLeavePolicyConfigurations() {
     if (
       !this.deferredLeavePolicyConfigurations ||
@@ -6120,27 +6076,27 @@ class ConsumePassedData {
     }
 
     try {
-      // Map entity types to corresponding Prisma model names 
+      // Map entity types to corresponding Prisma model names
       // IMPORTANT: These must match the actual model names in Prisma exactly (case sensitive)
       const modelMapping = {
         Employee: "employee",
         Organization: "organization",
-        OrganizationLocation: "organizationlocation", // Fixed casing to match actual Prisma model name
+        OrganizationLocation: "organizationlocation",
         Department: "department",
-        JobTitle: "jobtitle", // Fixed casing
-        EmploymentType: "employmenttype", // Fixed casing
-        BankMaster: "bankmaster", // Fixed casing
-        PolicyModule: "policymodule", // Fixed casing
-        PolicySetting: "policysetting", // Fixed casing
-        SalaryStructure: "salarystructure", // Fixed casing
-        ShiftConfiguration: "shiftconfiguration", // Fixed casing
-        EmployeePersonalDetail: "employeepersonaldetail", // Fixed casing
-        EmployeeBankDetail: "employeebankdetail", // Fixed casing
-        EmployeeFinancialDetail: "employeefinancialdetail", // Fixed casing
-        EmployeeSalary: "employeesalary", // Fixed casing
-        PayrollCycle: "payrollcycle", // Fixed casing
-        PayrollRun: "payrollrun", // Fixed casing
-        AttendanceSettings: "attendancesettings", // Fixed casing
+        JobTitle: "jobtitle",
+        EmploymentType: "employmenttype",
+        BankMaster: "bankmaster",
+        PolicyModule: "policymodule",
+        PolicySetting: "policysetting",
+        SalaryStructure: "salarystructure",
+        ShiftConfiguration: "shiftconfiguration",
+        EmployeePersonalDetail: "employeepersonaldetail",
+        EmployeeBankDetail: "employeebankdetail",
+        EmployeeFinancialDetail: "employeefinancialdetail",
+        EmployeeSalary: "employeesalary",
+        PayrollCycle: "payrollcycle",
+        PayrollRun: "payrollrun",
+        AttendanceSettings: "attendancesettings",
       };
 
       // Map entity types to their respective primary key field names (snake_case)

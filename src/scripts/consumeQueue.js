@@ -100,8 +100,27 @@ class QueueConsumer {
       );
 
       // Write data to files
-      const passedFilePath = path.join(__dirname, "../../passed_data.json");
-      const failedFilePath = path.join(__dirname, "../../failed_data.json");
+      // Explicitly set the absolute path to your project directory
+      const projectRoot = "/home/nabeel/Documents/AIDIPH/tenant_onboarding";
+      const passedFilePath = path.join(projectRoot, "passed_data.json");
+      const failedFilePath = path.join(projectRoot, "failed_data.json");
+
+      // Debug logs to see what paths we're using
+      console.log(`Debug - Using project root: ${projectRoot}`);
+      console.log(`Debug - Will write to: ${passedFilePath}`);
+      console.log(`Debug - Will write to: ${failedFilePath}`);
+
+      // Check if directory exists
+      try {
+        const stats = await fs.stat(projectRoot);
+        if (!stats.isDirectory()) {
+          throw new Error(`Project root is not a directory: ${projectRoot}`);
+        }
+        console.log(`Debug - Project directory exists and is valid`);
+      } catch (error) {
+        console.error(`Error with project directory: ${error.message}`);
+        throw error;
+      }
 
       await fs.writeFile(
         passedFilePath,
@@ -199,7 +218,8 @@ class QueueConsumer {
           const checkComplete = () => {
             if (messageCount >= messagesToConsume) {
               if (consumerTag) {
-                channel.cancel(consumerTag)
+                channel
+                  .cancel(consumerTag)
                   .then(() => {
                     logger.info({
                       message: `Completed consuming ${messageCount} messages from ${queueName}`,
@@ -260,7 +280,8 @@ class QueueConsumer {
               consumerTag = consumer.consumerTag;
               // Handle the case where we don't get any messages (queue is empty)
               if (messageCount === 0) {
-                channel.cancel(consumerTag)
+                channel
+                  .cancel(consumerTag)
                   .then(() => {
                     logger.info({
                       message: `No messages in ${queueName} to consume`,
