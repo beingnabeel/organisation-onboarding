@@ -9,8 +9,8 @@
     "corporation_date": "2022-09-30T18:29:50.000Z",
     "cin": "u72900br2022ptc055919",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "bank_id": "b42c9970-e1c9-550b-ae3d-3cab1126ba5d",
@@ -19,8 +19,8 @@
     "bank_code": "50215",
     "swift_code": "hdfcinbb",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "org_bank_id": "13b185e6-854f-5571-8dfa-8bc45175f754",
@@ -33,8 +33,8 @@
     "name_on_account": "rahul kumar",
     "is_primary": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "org_tax_id": "321e279c-062b-53d9-9189-a8bb703a4a4f",
@@ -43,8 +43,8 @@
     "tan": "ptna12345a",
     "tan_circle_number": "vwxyz1234u",
     "corporate_income_tax_location": "patna, bihar, india",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "org_compliance_id": "25a9963e-74a3-529b-abcf-36805996241c",
@@ -61,8 +61,8 @@
     "lwf_establishment_id": "brlwf456789",
     "lwf_registration_date": "2022-10-11T18:29:50.000Z",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "country_id": "b3410648-7b7d-582d-b17b-9a8e73645025",
@@ -71,8 +71,8 @@
     "dial_code": "91",
     "currency_code": "inr",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "state_id": "39d12fce-6980-520e-83e6-75effd144054",
@@ -80,8 +80,8 @@
     "state_code": "bhr",
     "state_name": "bihar",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "location_id": "973e7510-3b4f-543e-98b1-170895493d0c",
@@ -103,8 +103,8 @@
     "gstin": "",
     "timezone": "asia/kolkata",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "state_id": "36f0f9de-37ef-56ca-a4f1-827f6cca9270",
@@ -112,8 +112,8 @@
     "state_code": "kar",
     "state_name": "karnataka",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "location_id": "0c295428-1383-5d43-80c1-7e79031d0f4e",
@@ -135,8 +135,8 @@
     "gstin": "",
     "timezone": "asia/kolkata",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "dept_type_id": "fc75c55a-0ca1-5520-b16f-7261fd341be0",
@@ -144,8 +144,8 @@
     "type_code": "sr01",
     "description": "develops and maintains company software products",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "dept_type_id": "76286ad2-1b8f-544f-b4f4-f746ef5c8bdc",
@@ -153,8 +153,8 @@
     "type_code": "it01",
     "description": "handles software, hardware, and security systems",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "dept_id": "caa2a350-b332-5714-9c86-74336350e9f5",
@@ -166,8 +166,8 @@
     "cost_center_code": "cc104",
     "description": "application development",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "dept_id": "85e8e0bb-2167-5292-ac12-721440747a7a",
@@ -179,16 +179,16 @@
     "cost_center_code": "cc103",
     "description": "it infrastructure & support",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employment_type_id": "0cc95bb2-8ee6-518f-8c0a-eae8370cda0f",
     "type_name": "permanent",
     "type_code": "ft01",
     "description": "regular full-time employment",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "job_title_id": "eb41eb4a-d193-5678-823e-ae88e968a9ba",
@@ -197,16 +197,16 @@
     "title_code": "se01",
     "title_description": "developes and maintains software application",
     "grade_level": 5,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employment_type_id": "fc25afa3-1214-593a-afc2-47bb69705b65",
     "type_name": "consultant",
     "type_code": "cn01",
     "description": "part-time employment",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "job_title_id": "3bce484d-d2cb-5a30-b3a6-99d32f063d28",
@@ -215,16 +215,16 @@
     "title_code": "pm01",
     "title_description": "manages product development lifecycle",
     "grade_level": 6,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employment_type_id": "33ead9ab-07b7-5287-a0e6-db20e5f6ec37",
     "type_name": "contract",
     "type_code": "ct01",
     "description": "fixed-term contract employment",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "job_title_id": "6fb47bad-9416-50da-9e8f-ec591564121a",
@@ -233,8 +233,8 @@
     "title_code": "hr01",
     "title_description": "oversees human resources opearations",
     "grade_level": 7,
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
@@ -264,8 +264,8 @@
     "reporting_manager_id": null,
     "notice_period_days": 60,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employee_id": "b75af09b-0738-5022-a719-16d9cdbf13b6",
@@ -295,8 +295,8 @@
     "reporting_manager_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "notice_period_days": 60,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employee_id": "0ebcfab7-a16a-5832-a84f-f5947997ac2f",
@@ -326,8 +326,8 @@
     "reporting_manager_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "notice_period_days": 60,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_personal_det_id": "75c1b54f-37fd-5573-8bdd-81cd77b06318",
@@ -346,8 +346,8 @@
     "social_media_handles": {
       "instagram": "neyaz"
     },
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_personal_det_id": "b9912110-e2b6-5495-af93-9d07d0de5d60",
@@ -366,8 +366,8 @@
     "social_media_handles": {
       "instagram": "sandeep"
     },
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_personal_det_id": "d1305109-3a63-59b6-93a5-74841378830d",
@@ -386,8 +386,8 @@
     "social_media_handles": {
       "instagram": "beingnabeel"
     },
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "bank_id": "36e70483-9493-5785-96a8-d9ecc08df8bb",
@@ -396,8 +396,8 @@
     "bank_code": "32554",
     "swift_code": "hdfcindas",
     "is_active": true,
-    "created_at": "2025-03-26T10:17:45.403Z",
-    "updated_at": "2025-03-26T10:17:45.403Z"
+    "created_at": "2025-03-26T11:20:46.548Z",
+    "updated_at": "2025-03-26T11:20:46.548Z"
   },
   {
     "employee_bank_id": "efa25f3e-be01-5e5b-ae61-25025e5cb66b",
@@ -410,8 +410,8 @@
     "name_on_account": "neyaz ahmad",
     "is_primary": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_financial_id": "7a89a28e-524b-5c29-ab55-f9e972755666",
@@ -437,8 +437,8 @@
     "full_name_in_pan": "neyaz ahmad",
     "dob_in_pan": "1999-03-01T18:29:50.000Z",
     "parents_name_in_pan": "ahmad",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employee_bank_id": "b114369f-d4ee-5940-8f32-fd86a286795d",
@@ -451,8 +451,8 @@
     "name_on_account": "sandeep chaurasiya",
     "is_primary": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_financial_id": "8acf7b0b-aeb0-5243-9fb6-ae5d607eb0a5",
@@ -478,8 +478,8 @@
     "full_name_in_pan": "sandeep chaurasiya",
     "dob_in_pan": "1999-02-03T18:29:50.000Z",
     "parents_name_in_pan": "chaurasiya",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "employee_bank_id": "063d4457-d822-51e0-8bfb-eca3f38ef1b1",
@@ -492,8 +492,8 @@
     "name_on_account": "nabeel hassan",
     "is_primary": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "empl_financial_id": "443a3d13-031d-5204-b3e0-527f32b24a92",
@@ -519,8 +519,8 @@
     "full_name_in_pan": "nabeel hassan",
     "dob_in_pan": "2002-02-01T18:29:50.000Z",
     "parents_name_in_pan": "iftekhar ahmad",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "component_id": "b33808fe-ffc1-5f55-a7cb-50d37e4bf04b",
@@ -544,8 +544,8 @@
     "print_name": "basic",
     "description": "basic salary component",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "component_id": "4e00b06b-a796-576f-9a03-0af14bd7339f",
@@ -569,8 +569,8 @@
     "print_name": "hra",
     "description": "house rent allowance component",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "structure_id": "c447b2b6-51eb-5a87-98b7-91ed9f691710",
@@ -584,8 +584,8 @@
     "effective_to": null,
     "is_default": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "structure_component_id": "847e339f-2d7a-5404-8451-54240e5adc79",
@@ -599,8 +599,8 @@
     "default_value": null,
     "is_mandatory": true,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "salary_id": "cefde3cb-6fd5-5e9b-ba90-3072c1d7fe74",
@@ -615,8 +615,8 @@
     "revision_type": null,
     "revision_reason": null,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "salary_id": "5178c1b3-384c-5ff3-b7c0-eb499be3ad65",
@@ -631,8 +631,8 @@
     "revision_type": null,
     "revision_reason": null,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "salary_id": "63b869c0-6f85-5ebb-9f1f-3e2da01e3179",
@@ -647,8 +647,8 @@
     "revision_type": null,
     "revision_reason": null,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "cycle_id": "d130fa62-83b1-5ff5-9d90-79f0d06f8040",
@@ -661,8 +661,8 @@
     "consider_previous_month": false,
     "is_default": false,
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "run_id": "1cd68f7d-22d5-5513-b1a6-8acafa11a419",
@@ -680,8 +680,8 @@
     "processed_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "approved_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "remarks": "janauary 2024 payroll processed successfully.",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "module_id": "dfc85651-7450-5378-8083-e4452e775911",
@@ -697,8 +697,8 @@
     "effective_to": null,
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "setting_id": "d55a4892-302d-5b8d-92a5-9eb76a853b1a",
@@ -723,8 +723,8 @@
     "status": "active",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "policy_id": "e8a7e3d1-38f2-5377-92bb-31902fa5f8d2",
@@ -745,8 +745,8 @@
     "status": "active",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "version_id": "e9ecfc44-51c4-5931-9988-ccf515d3fdbc",
@@ -761,20 +761,20 @@
     "approved_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "acknowledgment_id": "59d7990d-d524-5b5e-a61e-2906e8cd8b1c",
     "version_id": "e9ecfc44-51c4-5931-9988-ccf515d3fdbc",
     "employee_id": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "acknowledged_at": "2025-03-26T10:17:45.399Z",
+    "acknowledged_at": "2025-03-26T11:20:46.544Z",
     "acknowledgment_type": "electronic",
     "ip_address": "192.168.1.1",
     "user_agent": "mozilla/5.0 (windows nt 10.0; win64; x64",
     "comments": "acknowledge the poiicy",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "config_id": "55bfae96-757e-55b0-a14b-84ad7d119fac",
@@ -782,7 +782,7 @@
     "org_id": "98ec4577-5ea3-5c3e-a88a-9be230834a8f",
     "leave_type": "casual",
     "accrual_frequency": "monthly",
-    "days_per_year": "12.00",
+    "days_per_year": 12,
     "min_days_per_request": 1,
     "max_days_per_request": 3,
     "min_notice_days": 1,
@@ -798,8 +798,8 @@
     "status": "active",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "calendar_id": "8c9ee76f-99f0-50cb-b74c-394b7c9242ff",
@@ -808,8 +808,8 @@
     "start_date": "2023-12-31T18:29:50.000Z",
     "end_date": "2024-12-30T18:29:50.000Z",
     "status": "active",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "holiday_id": "0b245f58-2766-5a71-902a-0abb542528fd",
@@ -818,8 +818,8 @@
     "holiday_type": "public",
     "recurrence_type": "yearly_fixed_date",
     "description": "celebration of the new year",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "calendar_detail_id": "294a766c-85cb-5ef3-b72d-730b2552a09f",
@@ -828,8 +828,8 @@
     "holiday_date": "2023-12-31T18:29:50.000Z",
     "is_half_day": false,
     "half_day_type": "none",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "holiday_id": "1cb7b5e8-9f82-5786-a1ab-ed00381009e3",
@@ -838,8 +838,8 @@
     "holiday_type": "public",
     "recurrence_type": "yearly_fixed_date",
     "description": "celebration of national independance ",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "calendar_detail_id": "f986496e-3afa-5cf6-ab9b-ca3320882102",
@@ -848,8 +848,8 @@
     "holiday_date": "2024-08-14T18:29:50.000Z",
     "is_half_day": false,
     "half_day_type": "none",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "holiday_id": "df1c8a7c-df6a-55bb-8aa7-49a0f7ce4f3e",
@@ -858,8 +858,8 @@
     "holiday_type": "religious",
     "recurrence_type": "yearly_variable_date",
     "description": "festival of lights",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "calendar_detail_id": "04c68558-da00-50aa-a4d1-3ec974675139",
@@ -868,8 +868,8 @@
     "holiday_date": "2024-05-13T18:29:50.000Z",
     "is_half_day": false,
     "half_day_type": "none",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "id": "07cde23e-f8b4-5f04-bd93-c003385cd444",
@@ -905,8 +905,8 @@
     "weekendOvertimeMultiplier": "1.50",
     "holidayOvertimeMultiplier": "2.00",
     "status": "active",
-    "createdAt": "2025-03-26T10:17:45.399Z",
-    "updatedAt": "2025-03-26T10:17:45.399Z",
+    "createdAt": "2025-03-26T11:20:46.544Z",
+    "updatedAt": "2025-03-26T11:20:46.544Z",
     "createdBy": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updatedBy": "3ae28254-ddd2-5336-8228-d9331509f6a6"
   },
@@ -926,8 +926,8 @@
     "status": "active",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "shift_id": "adcb4fc5-5e3c-5f81-85fa-bd1753caf930",
@@ -945,8 +945,8 @@
     "status": "active",
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "assignment_id": "2ce9a7ea-8810-5de1-a182-f1039061b1cf",
@@ -956,8 +956,8 @@
     "effective_to": null,
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "assignment_id": "4c9bd323-7ca8-52c8-84f7-376d453595a3",
@@ -967,8 +967,8 @@
     "effective_to": null,
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   },
   {
     "assignment_id": "ced2423d-8334-5829-b2a1-13aea9ac911f",
@@ -978,7 +978,7 @@
     "effective_to": null,
     "created_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
     "updated_by": "3ae28254-ddd2-5336-8228-d9331509f6a6",
-    "created_at": "2025-03-26T10:17:45.399Z",
-    "updated_at": "2025-03-26T10:17:45.399Z"
+    "created_at": "2025-03-26T11:20:46.544Z",
+    "updated_at": "2025-03-26T11:20:46.544Z"
   }
 ]

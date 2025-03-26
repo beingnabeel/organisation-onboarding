@@ -3165,43 +3165,44 @@ exports.handleObjectData = catchAsync(async (req, res, next) => {
       }
 
       // Handle days_per_year which is a Decimal field in the database
-      if (data.days_per_year === undefined || data.days_per_year === null) {
-        logger.error({
-          message: `Missing required days_per_year for LeavePolicyConfiguration`,
-          metadata: {
-            config_id: data.config_id,
-            timestamp: new Date().toISOString(),
-          },
-        });
-        return res.status(400).json({
-          status: "error",
-          message:
-            "Missing required days_per_year for LeavePolicyConfiguration",
-          data: null,
-        });
-      } else {
-        try {
-          // Convert to Decimal for Prisma
-          data.days_per_year = new Prisma.Decimal(data.days_per_year);
-        } catch (error) {
-          logger.error({
-            message: `Invalid decimal format for days_per_year in LeavePolicyConfiguration: ${data.days_per_year}`,
-            metadata: {
-              config_id: data.config_id,
-              days_per_year: data.days_per_year,
-              timestamp: new Date().toISOString(),
-            },
-          });
-          return res.status(400).json({
-            status: "error",
-            message: `Invalid decimal format for days_per_year: ${data.days_per_year}`,
-            data: null,
-          });
-        }
-      }
+      // if (data.days_per_year === undefined || data.days_per_year === null) {
+      //   logger.error({
+      //     message: `Missing required days_per_year for LeavePolicyConfiguration`,
+      //     metadata: {
+      //       config_id: data.config_id,
+      //       timestamp: new Date().toISOString(),
+      //     },
+      //   });
+      //   return res.status(400).json({
+      //     status: "error",
+      //     message:
+      //       "Missing required days_per_year for LeavePolicyConfiguration",
+      //     data: null,
+      //   });
+      // } else {
+      //   try {
+      //     // Convert to Decimal for Prisma
+      //     data.days_per_year = new Prisma.Decimal(data.days_per_year);
+      //   } catch (error) {
+      //     logger.error({
+      //       message: `Invalid decimal format for days_per_year in LeavePolicyConfiguration: ${data.days_per_year}`,
+      //       metadata: {
+      //         config_id: data.config_id,
+      //         days_per_year: data.days_per_year,
+      //         timestamp: new Date().toISOString(),
+      //       },
+      //     });
+      //     return res.status(400).json({
+      //       status: "error",
+      //       message: `Invalid decimal format for days_per_year: ${data.days_per_year}`,
+      //       data: null,
+      //     });
+      //   }
+      // }
 
       // Handle integer fields
       const intFields = [
+        "days_per_year",
         "min_days_per_request",
         "max_days_per_request",
         "min_notice_days",

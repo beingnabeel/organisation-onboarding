@@ -1113,7 +1113,7 @@ model LeavePolicyConfiguration {
   org_id                        String                @db.Uuid
   leave_type                    LeaveType             @default(casual)
   accrual_frequency             LeaveAccrualFrequency @default(monthly)
-  days_per_year                 Decimal               @db.Decimal(5, 2)
+  days_per_year                 Int                   @default(0)
   min_days_per_request          Int?
   max_days_per_request          Int?
   min_notice_days               Int                   @default(0)

@@ -3296,7 +3296,7 @@ class ETLService {
               org_id: orgId,
               leave_type: configDataMap.leave_type || "",
               accrual_frequency: configDataMap.accural_frequency || "",
-              days_per_year: parseFloat(daysPerYear).toFixed(2),
+              days_per_year: daysPerYear,
               min_days_per_request: minDaysPerRequest,
               max_days_per_request: maxDaysPerRequest,
               min_notice_days: minNoticeDays,
