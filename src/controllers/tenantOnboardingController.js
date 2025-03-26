@@ -6728,66 +6728,170 @@ exports.getObjectById = catchAsync(async (req, res, next) => {
     // Get primary key field based on object type
     let primaryKeyField;
     switch (singularModelName) {
-      case "organization":
+      case "Organization":
         primaryKeyField = "org_id";
-        break;
-      case "employee":
-        primaryKeyField = "employee_id";
-        break;
-      case "department":
-        primaryKeyField = "dept_id";
         break;
       case "OrganizationLocation":
         primaryKeyField = "location_id";
         break;
-      case "employmentType":
+      case "OrganizationTaxDetail":
+        primaryKeyField = "org_tax_id";
+        break;
+      case "OrganizationComplianceDetail":
+        primaryKeyField = "org_compliance_id";
+        break;
+      case "DepartmentType":
+        primaryKeyField = "dept_type_id";
+        break;
+      case "Department":
+        primaryKeyField = "dept_id";
+        break;
+      case "EmploymentType":
         primaryKeyField = "employment_type_id";
         break;
-      case "jobTitle":
+      case "JobTitle":
         primaryKeyField = "job_title_id";
         break;
-      case "bankDetail":
-        primaryKeyField = "bank_detail_id";
+      case "Employee":
+        primaryKeyField = "employee_id";
         break;
-      case "document":
-        primaryKeyField = "document_id";
+      case "BankMaster":
+        primaryKeyField = "bank_id";
         break;
-      case "contact":
-        primaryKeyField = "contact_id";
+      case "CountryMaster":
+        primaryKeyField = "country_id";
         break;
-      case "qualification":
-        primaryKeyField = "qualification_id";
+      case "StateMaster":
+        primaryKeyField = "state_id";
         break;
-      case "currentPosition":
-        primaryKeyField = "position_id";
+      case "EmployeePersonalDetail":
+        primaryKeyField = "empl_personal_det_id";
         break;
-      case "previousEmployment":
-        primaryKeyField = "previous_employment_id";
+      case "EmployeeBankDetail":
+        primaryKeyField = "employee_bank_id";
         break;
-      case "employeeSalary":
-        primaryKeyField = "employee_salary_id";
+      case "EmployeeFinancialDetail":
+        primaryKeyField = "empl_financial_id";
         break;
-      case "salaryStructure":
-        primaryKeyField = "structure_id";
-        break;
-      case "salaryStructureComponent":
+      case "SalaryComponentMaster":
         primaryKeyField = "component_id";
         break;
-      case "policyModule":
-        primaryKeyField = "module_id";
+      case "SalaryStructure":
+        primaryKeyField = "structure_id";
         break;
-      case "policySetting":
-        primaryKeyField = "setting_id";
+      case "SalaryStructureComponent":
+        primaryKeyField = "structure_component_id";
         break;
-      case "payrollCycle":
+      case "EmployeeSalary":
+        primaryKeyField = "salary_id";
+        break;
+      case "PayrollCycle":
         primaryKeyField = "cycle_id";
         break;
-      case "payrollRun":
+      case "PayrollRun":
         primaryKeyField = "run_id";
+        break;
+      case "PolicyModule":
+        primaryKeyField = "module_id";
+        break;
+      case "PolicySetting":
+        primaryKeyField = "setting_id";
+        break;
+      case "ProbationPolicy":
+        primaryKeyField = "policy_id";
+        break;
+      case "PolicyDocumentVersion":
+        primaryKeyField = "version_id";
+        break;
+      case "PolicyAcknowledgment":
+        primaryKeyField = "acknowledgment_id";
+        break;
+      case "LeavePolicyConfiguration":
+        primaryKeyField = "config_id";
+        break;
+      case "AttendanceSettings":
+        primaryKeyField = "id";
+        break;
+      case "ShiftConfiguration":
+        primaryKeyField = "shift_id";
+        break;
+      case "EmployeeShiftAssignment":
+        primaryKeyField = "assignment_id";
+        break;
+      case "HolidayCalendarYear":
+        primaryKeyField = "calendar_id";
+        break;
+      case "HolidayMaster":
+        primaryKeyField = "holiday_id";
+        break;
+      case "HolidayCalendarDetail":
+        primaryKeyField = "calendar_detail_id";
         break;
       default:
         primaryKeyField = "id";
     }
+    // let primaryKeyField;
+    // switch (singularModelName) {
+    //   case "organization":
+    //     primaryKeyField = "org_id";
+    //     break;
+    //   case "employee":
+    //     primaryKeyField = "employee_id";
+    //     break;
+    //   case "department":
+    //     primaryKeyField = "dept_id";
+    //     break;
+    //   case "OrganizationLocation":
+    //     primaryKeyField = "location_id";
+    //     break;
+    //   case "employmentType":
+    //     primaryKeyField = "employment_type_id";
+    //     break;
+    //   case "jobTitle":
+    //     primaryKeyField = "job_title_id";
+    //     break;
+    //   case "bankDetail":
+    //     primaryKeyField = "bank_detail_id";
+    //     break;
+    //   case "document":
+    //     primaryKeyField = "document_id";
+    //     break;
+    //   case "contact":
+    //     primaryKeyField = "contact_id";
+    //     break;
+    //   case "qualification":
+    //     primaryKeyField = "qualification_id";
+    //     break;
+    //   case "currentPosition":
+    //     primaryKeyField = "position_id";
+    //     break;
+    //   case "previousEmployment":
+    //     primaryKeyField = "previous_employment_id";
+    //     break;
+    //   case "employeeSalary":
+    //     primaryKeyField = "employee_salary_id";
+    //     break;
+    //   case "salaryStructure":
+    //     primaryKeyField = "structure_id";
+    //     break;
+    //   case "salaryStructureComponent":
+    //     primaryKeyField = "component_id";
+    //     break;
+    //   case "policyModule":
+    //     primaryKeyField = "module_id";
+    //     break;
+    //   case "policySetting":
+    //     primaryKeyField = "setting_id";
+    //     break;
+    //   case "payrollCycle":
+    //     primaryKeyField = "cycle_id";
+    //     break;
+    //   case "payrollRun":
+    //     primaryKeyField = "run_id";
+    //     break;
+    //   default:
+    //     primaryKeyField = "id";
+    // }
 
     // Validate if the model exists in Prisma
     if (!prisma[singularModelName]) {
