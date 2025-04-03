@@ -1,0 +1,80 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Tenant Onboarding ETL Lambda triggered by S3 uploads
+
+Parameters:
+  S3BucketName:
+    Type: String
+    Description: The name of the S3 bucket where Excel files are uploaded
+  
+  RabbitMQURL:
+    Type: String
+    Description: The URL for connecting to RabbitMQ server
+    Default: amqp://localhost
+  
+  ApiBaseUrl:
+    Type: String
+    Description: The base URL for the API server
+    Default: http://localhost:8085
+
+Resources:
+  TenantOnboardingETLFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: index.handler
+      Runtime: nodejs18.x
+      Architectures:
+        - x86_64
+      MemorySize: 512
+      Timeout: 900 # 15 minutes
+      Environment:
+        Variables:
+          RABBITMQ_URL: !Ref RabbitMQURL
+          API_BASE_URL: !Ref ApiBaseUrl
+          RABBITMQ_EXCHANGE: etl_exchange
+          RABBITMQ_PASSED_QUEUE: passed_data
+          RABBITMQ_FAILED_QUEUE: failed_data
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref S3BucketName
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Ref TenantOnboardingBucket
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Suffix: .xlsx
+
+  TenantOnboardingBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Ref S3BucketName
+      NotificationConfiguration:
+        LambdaConfigurations:
+          - Event: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Suffix: .xlsx
+            Function: !GetAtt TenantOnboardingETLFunction.Arn
+
+  BucketPermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !Ref TenantOnboardingETLFunction
+      Principal: s3.amazonaws.com
+      SourceArn: !Sub arn:aws:s3:::${S3BucketName}
+
+Outputs:
+  TenantOnboardingETLFunction:
+    Description: "Tenant Onboarding ETL Lambda Function ARN"
+    Value: !GetAtt TenantOnboardingETLFunction.Arn
+
+  TenantOnboardingBucket:
+    Description: "S3 bucket for uploading Excel files"
+    Value: !Ref TenantOnboardingBucket
