@@ -113,6 +113,10 @@ class ConsumePassedData {
     this.baseURL = process.env.API_BASE_URL || "http://localhost:8085";
   }
 
+  // Private RabbitMQ connection and channel for consumer
+  connection = null;
+  channel = null;
+  
   // here we are starting the consumer for the passed_data queue
   async startConsumer() {
     try {
@@ -121,14 +125,34 @@ class ConsumePassedData {
         timestamp: new Date().toISOString(),
       });
 
-      // Connect to RabbitMQ
-      const channel = await mqService.connect();
+      // Close any existing connection/channel to start fresh
+      await this.close();
+      
+      // Create a fresh connection independent of mqService
+      this.connection = await require('amqplib').connect(
+        process.env.RABBITMQ_URL || "amqp://localhost"
+      );
+      
+      // Create a fresh channel
+      this.channel = await this.connection.createChannel();
+      
+      // Define our exchange and queues to ensure they exist
+      const exchange = process.env.RABBITMQ_EXCHANGE || "etl_exchange";
+      const passedQueue = process.env.RABBITMQ_PASSED_QUEUE || "passed_data";
+      const failedQueue = process.env.RABBITMQ_FAILED_QUEUE || "failed_data";
+      
+      // Set up exchange and queues
+      await this.channel.assertExchange(exchange, "direct", { durable: true });
+      await this.channel.assertQueue(passedQueue, { durable: true });
+      await this.channel.assertQueue(failedQueue, { durable: true });
+      await this.channel.bindQueue(passedQueue, exchange, "passed");
+      await this.channel.bindQueue(failedQueue, exchange, "failed");
 
       // Set prefetch to 1 to process one message at a time
-      await channel.prefetch(1);
+      await this.channel.prefetch(1);
 
       // Start consuming from the queue
-      await channel.consume(
+      await this.channel.consume(
         mqService.passedQueue,
         async (msg) => {
           if (!msg) return;
@@ -191,7 +215,7 @@ class ConsumePassedData {
             }
 
             // Acknowledge the message if processing was successful
-            channel.ack(msg);
+            this.channel.ack(msg);
             logger.info({
               message: "Message processed successfully and acknowledged",
               metadata: {
@@ -202,7 +226,7 @@ class ConsumePassedData {
           } catch (error) {
             // Acknowledge the message even if processing failed - we don't want to retry automatically
             // as we handle retries within our processMessage function
-            channel.ack(msg);
+            this.channel.ack(msg);
             logger.error({
               message: "Failed to process message",
               metadata: {
@@ -216,10 +240,29 @@ class ConsumePassedData {
             });
 
             // Publish failed message to the failed queue
-            await mqService.publishToFailed(
-              JSON.parse(msg.content.toString()),
-              error.message
-            );
+            // Use our own channel for publishing to the failed queue
+            const failedQueue = process.env.RABBITMQ_FAILED_QUEUE || "failed_data";
+            const exchange = process.env.RABBITMQ_EXCHANGE || "etl_exchange";
+            
+            try {
+              await this.channel.publish(
+                exchange,
+                "failed",
+                Buffer.from(JSON.stringify({
+                  data: JSON.parse(msg.content.toString()),
+                  error: error.message,
+                  timestamp: new Date().toISOString()
+                }))
+              );
+            } catch (publishError) {
+              logger.error({
+                message: "Failed to publish to failed queue",
+                metadata: {
+                  error: publishError.message,
+                  timestamp: new Date().toISOString(),
+                },
+              });
+            }  
           }
         },
         { noAck: false }
@@ -6026,7 +6069,48 @@ class ConsumePassedData {
    */
   async stopConsumer() {
     try {
-      await mqService.close();
+      // Close our private channel if it exists
+      if (this.channel) {
+        try {
+          await this.channel.close();
+          this.channel = null;
+          logger.info({
+            message: "Successfully closed consumer channel",
+            timestamp: new Date().toISOString(),
+          });
+        } catch (channelError) {
+          // Log but continue - channel might already be closed
+          logger.warn({
+            message: "Warning when closing consumer channel",
+            metadata: {
+              error: channelError.message,
+              timestamp: new Date().toISOString(),
+            },
+          });
+        }
+      }
+      
+      // Close our private connection if it exists
+      if (this.connection) {
+        try {
+          await this.connection.close();
+          this.connection = null;
+          logger.info({
+            message: "Successfully closed consumer connection",
+            timestamp: new Date().toISOString(),
+          });
+        } catch (connError) {
+          // Log but continue - connection might already be closed
+          logger.warn({
+            message: "Warning when closing consumer connection",
+            metadata: {
+              error: connError.message,
+              timestamp: new Date().toISOString(),
+            },
+          });
+        }
+      }
+      
       logger.info({
         message: "Consumer stopped for passed_data queue",
         timestamp: new Date().toISOString(),

@@ -4664,7 +4664,8 @@ class ETLService {
       // Read from etltransform.json using path module for consistent file resolution
       const path = require("path");
       const fs = require("fs").promises;
-      const filePath = path.join(__dirname, "../../etltransform.json");
+      // const filePath = path.join(__dirname, "../../etltransform.json");
+      const filePath = path.join(__dirname, "../scripts/etltransform.json");
       const data = JSON.parse(await fs.readFile(filePath, "utf8"));
 
       logger.info({

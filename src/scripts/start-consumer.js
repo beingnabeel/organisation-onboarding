@@ -1,6 +1,6 @@
 require("dotenv").config();
-const consumePassedData = require("./src/services/consumePassedData");
-const { logger } = require("./src/utils/logger");
+const consumePassedData = require("../services/consumePassedData");
+const { logger } = require("../utils/logger");
 
 async function startConsumer() {
   try {

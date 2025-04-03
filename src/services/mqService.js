@@ -148,33 +148,61 @@ class MQService {
     }
   }
 
+  /**
+   * Close the RabbitMQ connection
+   */
   async close() {
     try {
+      // Close channel if it exists and seems to be open
       if (this.channel) {
-        await this.channel.close();
-        this.channel = null;
+        try {
+          await this.channel.close();
+        } catch (channelError) {
+          // Log but don't throw - channel may already be closed
+          logger.warn({
+            message: "Channel already closed or error while closing",
+            metadata: {
+              error: channelError.message,
+            },
+          });
+        }
       }
-
+      
+      // Close connection if it exists and seems to be open
       if (this.connection) {
-        await this.connection.close();
-        this.connection = null;
+        try {
+          await this.connection.close();
+        } catch (connError) {
+          // Log but don't throw - connection may already be closed
+          logger.warn({
+            message: "Connection already closed or error while closing",
+            metadata: {
+              error: connError.message,
+            },
+          });
+        }
       }
-
+      
+      this.channel = null;
+      this.connection = null;
+      
       logger.info({
-        message: "Closed RabbitMQ connection",
+        message: "RabbitMQ resources released",
         timestamp: new Date().toISOString(),
       });
     } catch (error) {
+      // This catch block should never be reached given our error handling above,
+      // but keeping it as a safety measure
       logger.error({
-        message: "Error closing RabbitMQ connection",
+        message: "Unexpected error during RabbitMQ cleanup",
         metadata: {
           error: {
             message: error.message,
             stack: error.stack,
           },
         },
-        timestamp: new Date().toISOString(),
       });
+      // Don't rethrow - we want to continue even if cleanup fails
     }
   }
 }

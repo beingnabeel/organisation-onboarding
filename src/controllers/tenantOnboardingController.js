@@ -4,6 +4,7 @@ const etlService = require("../services/etlService");
 const AppError = require("../utils/appError");
 const catchAsync = require("../utils/catchAsync");
 const { PrismaClient } = require("@prisma/client");
+const s3Service = require("../services/s3Service");
 
 const prisma = new PrismaClient();
 
@@ -36,7 +37,67 @@ exports.processExcelFile = catchAsync(async (req, res, next) => {
     },
   });
 });
+// In src/controllers/tenantOnboardingController.js
+// Update the uploadExcelToS3 function
 
+exports.uploadExcelToS3 = catchAsync(async (req, res, next) => {
+  if (!req.file) {
+    return next(new AppError("Please upload an Excel file", 400));
+  }
+
+  if (!req.body.organizationName) {
+    return next(new AppError("Organization name is required", 400));
+  }
+
+  const organizationName = req.body.organizationName.trim();
+  // Create folder name - use the first word of org name or the whole name if no spaces
+  const folderName = organizationName.split(" ")[0].toLowerCase();
+
+  // Create the standardized file name - ensure .xlsx extension
+  const fileName = `tenant-onboarding-${folderName}.xlsx`;
+
+  logger.info({
+    message: "Starting file upload to S3",
+    metadata: {
+      originalName: req.file.originalname,
+      originalMimeType: req.file.mimetype,
+      newFileName: fileName,
+      organizationName,
+      folderName,
+    },
+  });
+
+  // Upload file to S3
+  const objectKey = await s3Service.uploadFile(
+    req.file.buffer,
+    fileName,
+    folderName
+  );
+
+  // Generate presigned URL
+  const presignedUrl = await s3Service.generatePresignedUrl(objectKey);
+
+  // Save record in database
+  const tenantFile = await prisma.tenantOnboardingFile.create({
+    data: {
+      organization_name: organizationName,
+      file_name: fileName,
+      s3_url: presignedUrl,
+    },
+  });
+
+  res.status(201).json({
+    status: "success",
+    message: "File uploaded successfully",
+    data: {
+      id: tenantFile.id,
+      organizationName: tenantFile.organization_name,
+      fileName: tenantFile.file_name,
+      s3Url: tenantFile.s3_url,
+      createdAt: tenantFile.created_at,
+    },
+  });
+});
 // here we are handling the objects of different types received from RabbitMQ consumer and inserting the data into the database
 exports.handleObjectData = catchAsync(async (req, res, next) => {
   const { objectType } = req.params;

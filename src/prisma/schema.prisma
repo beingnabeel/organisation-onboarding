@@ -328,6 +328,18 @@ enum PolicyStatus {
   deprecated
 }
 
+model TenantOnboardingFile {
+  id                String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  organization_name String   @db.VarChar(255)
+  file_name         String   @db.VarChar(255)
+  s3_url            String   @db.Text
+  status            Status   @default(active)
+  created_at        DateTime @default(now())
+  updated_at        DateTime @default(now())
+
+  @@map("tenant_onboarding_files")
+}
+
 model BankMaster {
   bank_id                 String                   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   bank_type               BankType
